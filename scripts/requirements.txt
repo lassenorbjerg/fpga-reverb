@@ -1,0 +1,6 @@
+# Host-side Python tooling (scripts/).  Install with:
+#   pip install -r requirements.txt
+
+pyserial>=3.5      # UART access, and the --list-ports helper
+sounddevice>=0.4.6 # PortAudio bindings for live microphone capture
+numpy>=1.24        # sample scaling and int16/uint8 packing
