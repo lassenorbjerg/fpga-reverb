@@ -2,8 +2,7 @@ import chisel3._
 import chisel3.util._
 import chisel.lib.uart._
 
-/**
-  * This is the top level to for the UART output and a test blinking LED.
+/** This is the top level to for the UART output and a test blinking LED.
   */
 class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
   val io = IO(new Bundle {
@@ -11,11 +10,6 @@ class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
     val led = Output(Bool())
 
     // Debug taps used by the tester
-    val ready = Output(Bool())
-    val valid = Output(Bool())
-    val bits = Output(UInt(8.W))
-    val c = Output(UInt(4.W))
-    val c_t = Output(UInt(27.W))
 
   })
 
@@ -27,7 +21,21 @@ class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
   val cntr_time = RegInit(0.U(27.W))
   val CNT_MAX = frequ.U
 
-  val hello = VecInit('H'.U, 'e'.U, 'l'.U, 'l'.U, 'o'.U, ' '.U, 'W'.U, 'o'.U, 'r'.U, 'l'.U, 'd'.U, '!'.U, '\n'.U)
+  val hello = VecInit(
+    'H'.U,
+    'e'.U,
+    'l'.U,
+    'l'.U,
+    'o'.U,
+    ' '.U,
+    'W'.U,
+    'o'.U,
+    'r'.U,
+    'l'.U,
+    'd'.U,
+    '!'.U,
+    '\n'.U
+  )
 
   val message_sending = cntr =/= msg_len
 
@@ -51,11 +59,6 @@ class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
 
   io.tx := uart.io.txd.asBool
 
-  io.valid := uart.io.channel.valid
-  io.ready := uart.io.channel.ready
-  io.bits := hello(cntr)
-  io.c := cntr
-  io.c_t := cntr_time
 }
 
 // generate Verilog
