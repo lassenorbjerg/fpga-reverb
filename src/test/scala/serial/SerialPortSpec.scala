@@ -5,10 +5,11 @@ import chiseltest.experimental.expose
 
 class SerialPortExposed(frequ: Int = 10, baud: Int = 10)
     extends SerialPort(frequ, baud) {
-  val exposedUart = expose(uart)
-  val exposedHello = expose(hello)
-  val exposedC = expose(cntr)
-  val exposedC_t = expose(cntr_time)
+  val exposedValid = expose(valid)
+  val exposedReady = expose(ready)
+  val exposedBits = expose(bits)
+  val exposedC = expose(c)
+  val exposedC_t = expose(c_t)
 
 }
 
@@ -16,15 +17,15 @@ class SerialPortSpec extends AnyFlatSpec with ChiselScalatestTester {
   "SerialPort " should "pass" in {
     test(new SerialPortExposed()) { dut =>
       dut.clock.setTimeout(0)
-      println(dut.exposedUart.io.channel.ready.peek())
-      while (dut.exposedUart.io.channel.bits.peekInt().toChar != '\n') {
-        if (dut.exposedUart.io.channel.ready.peekBoolean()) {
+      println(dut.exposedReady.peek())
+      while (dut.exposedBits.peekInt().toChar != '\n') {
+        if (dut.exposedReady.peekBoolean()) {
           println(
             dut.exposedC.peek(),
             dut.exposedC_t.peek(),
-            dut.exposedUart.io.channel.bits.peekInt().toChar,
-            dut.exposedUart.io.channel.ready.peek(),
-            dut.exposedUart.io.channel.valid.peek()
+            dut.exposedBits.peekInt().toChar,
+            dut.exposedReady.peek(),
+            dut.exposedValid.peek()
           )
         }
         dut.clock.step(1)
@@ -33,9 +34,9 @@ class SerialPortSpec extends AnyFlatSpec with ChiselScalatestTester {
         println(
           dut.exposedC.peek(),
           dut.exposedC_t.peek(),
-          dut.exposedUart.io.channel.bits.peekInt().toChar,
-          dut.exposedUart.io.channel.ready.peek(),
-          dut.exposedUart.io.channel.valid.peek()
+          dut.exposedBits.peekInt().toChar,
+          dut.exposedReady.peek(),
+          dut.exposedValid.peek()
         )
         dut.clock.step(1)
       }

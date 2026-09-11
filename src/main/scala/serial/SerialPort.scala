@@ -59,6 +59,13 @@ class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
 
   io.tx := uart.io.txd.asBool
 
+  val valid = uart.io.channel.valid
+  val ready = uart.io.channel.ready
+  val bits = WireDefault(0.U(8.W))
+  bits := hello(cntr)
+  
+  val c = cntr
+  val c_t = cntr_time
 }
 
 // generate Verilog
