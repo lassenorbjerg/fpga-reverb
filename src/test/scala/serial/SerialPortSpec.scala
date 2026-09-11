@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class SerialPortSpec extends AnyFlatSpec with ChiselScalatestTester {
   "SerialPort " should "pass" in {
-    test(new SerialPort(10)) { dut =>
+    test(new SerialPort(10, 10)) { dut =>
       dut.clock.setTimeout(0)
       println(dut.io.ready.peek())
       while (dut.io.bits.peekInt().toChar != '\n') {
