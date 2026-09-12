@@ -1,7 +1,7 @@
 import chisel3._
 import chiseltest._
-import org.scalatest.flatspec.AnyFlatSpec
 import chiseltest.experimental.expose
+import org.scalatest.flatspec.AnyFlatSpec
 
 class SerialPortExposed(frequ: Int = 10, baud: Int = 10)
     extends SerialPort(frequ, baud) {
@@ -10,6 +10,7 @@ class SerialPortExposed(frequ: Int = 10, baud: Int = 10)
   val exposedBits = expose(bits)
   val exposedC = expose(c)
   val exposedC_t = expose(c_t)
+  val exposedHello = expose(hello)
 
 }
 
@@ -41,6 +42,41 @@ class SerialPortSpec extends AnyFlatSpec with ChiselScalatestTester {
         dut.clock.step(1)
       }
 
+    }
+  }
+}
+
+// when receiver is ready
+// when sender has valid data
+//
+
+class SerialPortWrite extends AnyFlatSpec with ChiselScalatestTester {
+  "SerialPort " should "write" in {
+    test(new SerialPortExposed()) { dut =>
+      dut.clock.setTimeout(0)
+      dut.exposedBits.expect('H'.U)
+      while (!dut.exposedReady.peekBoolean()) {
+        dut.exposedBits.expect('H'.U)
+        dut.clock.step(1)
+      }
+      dut.exposedValid.expect(true.B)
+      dut.exposedBits.expect('H'.U)
+
+      var c = 0
+      var hello = dut.exposedHello.peek()
+
+      for (i <- 0 until hello.length) {
+        println(hello(i.U).asUInt().toChar)
+      }
+      // while (dut.exposedBits.peekInt().toChar != '\n') {
+      //   if (dut.exposedReady.peekBoolean()) {
+      //     dut.exposedC.expect(c.U)
+      //     val msg = s"${hello(c)} does not match " + dut.exposedBits.peekInt().toChar
+      //     dut.exposedBits.expect(hello(c).U, msg)
+      //     c += 1
+      //   }
+      //   dut.clock.step(1)
+      // }
     }
   }
 }

@@ -467,3 +467,6 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+/project
+!/project/build.properties
+!/project/plugins.sbt
