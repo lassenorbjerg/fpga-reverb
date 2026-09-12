@@ -51,7 +51,7 @@ class SerialPortSpec extends AnyFlatSpec with ChiselScalatestTester {
 //
 
 class SerialPortWrite extends AnyFlatSpec with ChiselScalatestTester {
-  "SerialPort " should "write" in {
+  "SerialPort " should "write Hello World!" in {
     test(new SerialPortExposed()) { dut =>
       dut.clock.setTimeout(0)
       dut.exposedBits.expect('H'.U)
@@ -63,20 +63,30 @@ class SerialPortWrite extends AnyFlatSpec with ChiselScalatestTester {
       dut.exposedBits.expect('H'.U)
 
       var c = 0
-      var hello = dut.exposedHello.peek()
+      var hello = dut.exposedHello
 
-      for (i <- 0 until hello.length) {
-        println(hello(i.U).asUInt().toChar)
+      while (dut.exposedBits.peekInt().toChar != '\n') {
+        if (dut.exposedReady.peekBoolean()) {
+          dut.exposedC.expect(c.U)
+          val msg =
+            s"${hello(c.U).peekInt().toChar} does not match " + dut.exposedBits
+              .peekInt()
+              .toChar
+          dut.exposedBits.expect(hello(c.U).peekInt().U, msg)
+          print(dut.exposedBits.peekInt().toChar)
+          c += 1
+        }
+        dut.clock.step(1)
       }
-      // while (dut.exposedBits.peekInt().toChar != '\n') {
-      //   if (dut.exposedReady.peekBoolean()) {
-      //     dut.exposedC.expect(c.U)
-      //     val msg = s"${hello(c)} does not match " + dut.exposedBits.peekInt().toChar
-      //     dut.exposedBits.expect(hello(c).U, msg)
-      //     c += 1
-      //   }
-      //   dut.clock.step(1)
-      // }
+    }
+  }
+}
+
+class SerialPortRead extends AnyFlatSpec with ChiselScalatestTester {
+  "SerialPort" should "read" in {
+    test(new SerialPortExposed()) { dut =>
+      dut.clock.setTimeout(0)
+      
     }
   }
 }
