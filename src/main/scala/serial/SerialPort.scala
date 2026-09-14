@@ -13,6 +13,7 @@ class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
 
   })
 
+  // val uart = Module(new Echo(frequ, baud))
   val uart = Module(new BufferedTx(frequ, baud))
 
   val msg_len = 12.U
