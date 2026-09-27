@@ -4,6 +4,8 @@ Real-time audio effects using an FPGA
 
 `*-postfix` is the current version. There are branches for each version.
 
+Go to [test](#practical)
+
 # 0.3.2 - Using FIFO to delay input
 
 This is building on top of Third iteration.
@@ -118,25 +120,87 @@ Interfaces using ready/valid, buses, or custom protocols
 
 ### Memory Placement and Type
 
-- No memory. Just wires
+- UART uses registers to match clock speed with baud rate
 
 ### FSMD
 
-
+![alt text](docs/fsmd0_1_0.drawio.svg)
 
 ### Area Estimation
 
+- Tx
+  - 10 bits for Tx shift reg
+  - counter reg is 20 bits
+  - bits reg is 4 bits
+  - 2x equality (20.w+4.w)
+  - 1x not (4)
+  - 1x and (1w&1w)
+  - 1 x right shift (10.w)
+  - 1 x adder (4.w)
+- Rx
+  - Similar to Tx
+
+#### Rough estimate
+- eq = ceil(60 / 6) +  ceil(12 / 6) = 12
+- not = 1
+- and = 1
+- right shift = ceil(30 / 6) = 5
+- adder = 2
+- 12+1+1+5+2 = 21 6LUT
+
+- total: ~50 6LUT (RX has more than Tx)
+- 80 x dff (RX has more than Tx)
+
 ### Latency Estimation
+
+Assuming one baud cycle.
 
 ## Chisel File Structure
 
+```
+fpga-reverb/
+├── build.sbt
+├── project/
+├── scripts/
+│   ├── requirements.txt
+│   ├── serial_recv.py
+│   └── serial_send.py
+├── src/
+│   ├── main/
+│   │   └── scala/
+│   │       └── serial/
+│   │           ├── serialSend.scala
+│   │           └── serialRecv.scala
+│   └── test/
+│       └── scala/
+│           └── serial/
+│               ├── serialSendSpec.scala
+│               └── serialRecvSpec.scala
+├── Basys3_Master.xdc
+└── README.md
+```
+
 ## Implement in Chisel
+
+Development notes are added here
 
 ## Tests
 
+### serialRecvSpec
+
+- UART host sender needs to be mocked (senderMock)
+- Are the values from senderMock set in 
+
+### serialSendSpec
+
+
+
 ## Synthesize to Hardware
 
+Vivado will be used.
+___
 
+# Practical
 
 ## Development setup (VS Code + Metals)
 
