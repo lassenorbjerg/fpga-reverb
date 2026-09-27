@@ -1,6 +1,14 @@
-# Iteration 1
+# FPGA Reverb
 
-This is the first iteration of the design v0.1.0.
+Real-time audio effects using an FPGA
+
+`*-postfix` is the current version
+
+# 0.2.0
+
+# 0.1.0*
+
+This is the first iteration of the design.
 
 Here we just want host sending input through UART.
 Device sending it back unaltered through UART.
@@ -8,7 +16,7 @@ Device sending it back unaltered through UART.
 ## Hardware Specification (Device)
 ### Inputs
 
-The host sends data through UART
+The host sends microphone data through UART
 - PCM samples as UART bytes
   - 8 bits + 2 (start,stop)
 
@@ -20,10 +28,10 @@ The host receives data through UART
 
 ### Clock and reset behavior
 
-- Baud clock will be used
-- Nothing will be explicitly clocked
-- Reset will reset uart handshake
-- Clock will be handled by UART library
+- One clock cycle delay?
+  - Save in register, might be needed
+  - The baud rate vs global clock muddies what this delay means
+- Reset resets the UART handshake
 
 ### Data widths and numeric formats
 
@@ -50,7 +58,40 @@ The host receives data through UART
 
 ## Microarchitecture Design
 
-## FSMD
+### Modules
+
+- UART Send module (serialSend)
+- UART Receive module (serialRecv)
+
+For 0.1.0 we connect them directly
+```
+serialSend.bits := serialRecv.bits
+```
+
+#### [For later]
+- Memory module (memoryManager)
+  - Receives data from serialRecv
+  - Saves it in a register
+  - Sends it to serialSend
+
+### Protocols
+
+Interfaces using ready/valid, buses, or custom protocols
+
+- UART Protocol
+  - serialSend
+  - serialRecv
+
+- ready/valid
+  - 
+
+### Memory Placement and Type
+
+### FSMD
+
+### Area Estimation
+
+### Latency Estimation
 
 ## Chisel File Structure
 
