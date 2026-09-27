@@ -2,11 +2,51 @@
 
 Real-time audio effects using an FPGA
 
-`*-postfix` is the current version
+`*-postfix` is the current version. There are branches for each version.
 
-# 0.2.0
+# 0.3.2 - Using FIFO to delay input
 
-# 0.1.0*
+This is building on top of Third iteration.
+
+## Microarchitecture Design
+
+Delay FIFO. e.g. 10 clock cycles to see in simulation.
+
+Delay FIFO multiple ms
+
+### Modules
+
+- UART Send module (serialSend)
+- UART Receive module (serialRecv)
+- Memory module (memoryManager)
+  - Receives data from serialRecv
+  - Saves it in BRAM FIFO
+  - Sends it to serialSend after configurable amount of clock cycles
+
+# 0.3.1 - Creating FIFO in BRAM
+
+This is building on top of Third iteration.
+
+Create a FIFO using BRAM.
+
+
+# 0.3.0 - creating BRAM
+
+This is the Third iteration of the design.
+
+Save a value in BRAM.
+Vivado should say that BRAM is created
+
+# 0.2.0 - controlling volume
+
+This is the second iteration of the design.
+
+Host sends audio through UART.
+
+Device also have switches as input.
+Device sends audio back scaled by switches through UART.
+
+# 0.1.0* - Sending and receiving audio
 
 This is the first iteration of the design.
 
@@ -68,12 +108,6 @@ For 0.1.0 we connect them directly
 serialSend.bits := serialRecv.bits
 ```
 
-#### [For later]
-- Memory module (memoryManager)
-  - Receives data from serialRecv
-  - Saves it in a register
-  - Sends it to serialSend
-
 ### Protocols
 
 Interfaces using ready/valid, buses, or custom protocols
@@ -82,12 +116,13 @@ Interfaces using ready/valid, buses, or custom protocols
   - serialSend
   - serialRecv
 
-- ready/valid
-  - 
-
 ### Memory Placement and Type
 
+- No memory. Just wires
+
 ### FSMD
+
+
 
 ### Area Estimation
 
