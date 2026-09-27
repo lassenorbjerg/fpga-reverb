@@ -1,3 +1,58 @@
+# Iteration 1
+
+This is the first iteration of the design v0.1.0.
+
+Here we just want host sending input through UART.
+Device sending it back unaltered through UART.
+
+## Hardware Specification (Device)
+### Inputs
+
+The host sends data through UART
+- PCM samples as UART bytes
+  - 8 bits + 2 (start,stop) = 10 bits
+
+### Outputs
+
+The host receives data through UART
+- Unaltered PCM input
+  - Same format as input
+
+### Clock and reset behavior
+
+- Baud clock will be used
+- Nothing will be explicitly clocked
+- Reset will reset uart handshake
+
+### Data widths and numeric formats
+
+- pcm data will be uint8
+
+### Latency and throughput
+
+### Allowed operating frequency
+
+### Memory requirements
+
+### Error and corner-case behavior
+
+### Target: FPGA
+
+
+## Microarchitecture Design
+
+## FSMD
+
+## Chisel File Structure
+
+## Implement in Chisel
+
+## Tests
+
+## Synthesize to Hardware
+
+
+
 ## Development setup (VS Code + Metals)
 
 ### One-time setup per computer
@@ -54,3 +109,61 @@ sbt run
 ### Debugging
 
 Ensure `emitVerilog` in object
+
+
+## Host Setup
+
+### Installing dependencies
+
+```sh
+cd scripts/
+```
+
+The rest of the commands are assumed to be in `scripts/`
+
+```sh
+python -m venv .venv
+```
+
+#### Bash
+```sh
+source .venv/bin/activate
+```
+
+#### Powershell
+
+```ps1
+.\.venv\Scripts\activate.ps1
+```
+
+___
+
+Should look like this after activating
+```sh
+(.venv) fpga-reverb/scripts>
+```
+The rest of the commands are assumed to be in the activated virtual environment.
+___
+To install the dependencies run
+
+```sh
+pip install -r ./requirements.txt
+```
+
+### Running script
+
+Help found at
+```sh
+python ./serial_send.py --help
+```
+
+Simple usage
+```
+python ./serial_send.py MIC_PORT
+```
+
+
+A typical example for windows
+```sh
+python scripts/serial_send.py COM3
+```

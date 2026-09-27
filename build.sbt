@@ -1,6 +1,6 @@
 // See README.md for license details.
 
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := "2.13"
 ThisBuild / version := "0.1.0"
 ThisBuild / organization := "com.github.lassenorbjerg"
 
@@ -25,4 +25,5 @@ lazy val root = (project in file("."))
 
 libraryDependencies += "edu.berkeley.cs" %% "chisel3" % chiselVersion
 libraryDependencies += "edu.berkeley.cs" %% "chiseltest" % "0.6.2"
+// https://github.com/freechipsproject/ip-contributions
 libraryDependencies += "edu.berkeley.cs" % "ip-contributions" % "5.3.0"

@@ -33,7 +33,7 @@ import serial
 import sounddevice as sd
 from serial.tools import list_ports as lp
 
-DEFAULT_BAUD = 1_000_000
+DEFAULT_BAUD = 115_200
 DEFAULT_RATE = 16_000
 DEFAULT_BITS = 16
 DEFAULT_BLOCK = 256  # frames per audio callback
@@ -90,7 +90,7 @@ def build_encoder(bits: int, gain: float):
 
     def encode(block):
         samples = block[:, 0].astype(np.float32) * gain
-        peak = float(np.max(np.abs(samples))) / 32768.0 if samples.size else 0.0
+        peak = (float(np.max(np.abs(samples))) / 32768.0) if samples.size else 0.0
         if bits == 8:
             # Unsigned 8-bit, midpoint 128 -- one sample per UART byte.
             data = np.clip(samples / 256.0 + 128.0, 0, 255).astype(np.uint8)
@@ -315,7 +315,7 @@ def main(argv=None) -> int:
 
         if not args.port and not args.no_serial:
             print(
-                "error: no port given. Try --list-ports, or --no-serial to test the mic.",
+                "error: no port given. Try --list-ports, or --no-serial to test the mic. For help -h",
                 file=sys.stderr,
             )
             return 2
