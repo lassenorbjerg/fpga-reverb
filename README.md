@@ -10,7 +10,7 @@ Device sending it back unaltered through UART.
 
 The host sends data through UART
 - PCM samples as UART bytes
-  - 8 bits + 2 (start,stop) = 10 bits
+  - 8 bits + 2 (start,stop)
 
 ### Outputs
 
@@ -23,6 +23,7 @@ The host receives data through UART
 - Baud clock will be used
 - Nothing will be explicitly clocked
 - Reset will reset uart handshake
+- Clock will be handled by UART library
 
 ### Data widths and numeric formats
 
@@ -30,14 +31,22 @@ The host receives data through UART
 
 ### Latency and throughput
 
-### Allowed operating frequency
+- Should not notice a delay when audio is playing back
 
 ### Memory requirements
 
+- BRAM is not used in this iteration. One layer buffer might be all that is needed
+- Possibly big enough to have one sample block
+
 ### Error and corner-case behavior
 
-### Target: FPGA
+- Dropping samples
+- Clipping
+- Distorted playback
 
+### Target
+
+- Basys3 FPGA board
 
 ## Microarchitecture Design
 
