@@ -16,9 +16,25 @@ class BufferedTxDemoExposed(frequ: Int = 10, baud: Int = 10)
 
 class EchoDemoExposed(frequ: Int = 10, baud: Int = 10)
     extends EchoDemo(frequ, baud) {
-      val exposedUart = expose(uart)
-    }
+  val exposedTxBits = expose(uart.tx.io.channel.bits)
+  val exposedRxBits = expose(uart.rx.io.channel.bits) //
+}
 
+class EchoTestTop(frequ: Int = 10, baud: Int = 10) extends Module {
+  val io = IO(new Bundle { val tx = Output(Bool()) })
+
+  val sender = Module(new BufferedTxDemo(frequ, baud)) // dogfooding🤤
+  val echo = Module(new EchoDemo(frequ, baud))
+  echo.io.rx := sender.io.tx
+  io.tx := echo.io.tx
+
+  val senderBits = expose(sender.bits)
+  val senderReady = expose(sender.ready)
+  val txValid = expose(sender.valid)
+
+  val rxValid = expose(echo.uart.rx.io.channel.valid)
+  val rxBits = expose(echo.uart.rx.io.channel.bits)
+}
 
 class BufferedTxDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
   "BufferedTxDemo " should "pass" in {
@@ -90,32 +106,18 @@ class BufferedTxDemoWrite extends AnyFlatSpec with ChiselScalatestTester {
 
 class EchoDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
   "EchoDemo" should "echo" in {
-    test(new EchoDemoExposed()) { dut =>
-      val bufferedTx = new BufferedTxDemoExposed() // dogfooding🤤
-      dut.io.rx.poke(bufferedTx.io.tx)
+    test(new EchoTestTop()) { dut =>
       dut.clock.setTimeout(0)
-
+      val expected = "Hello World!\n"
       var c = 0
-      var hello = bufferedTx.exposedTxHello
-
-      while (bufferedTx.exposedTxBits.peekInt().toChar != '\n') {
-        
-        if (bufferedTx.exposedTxReady.peekBoolean()) {
-          bufferedTx.exposedTxC.expect(c.U)
-          val msgEcho =
-            s"${hello(c.U).peekInt().toChar} does not match " + dut.io.tx
-              .peekInt()
-              .toChar
-          dut.uart.tx.channel.bits.expect(hello(c.U).peekInt().U, msgEcho)  // TODO: should look at the bits
-          val msgTx =
-            "bufferedTx failed: " + s"${hello(c.U).peekInt().toChar} does not match " + bufferedTx.exposedTxBits
-              .peekInt()
-              .toChar
-          bufferedTx.exposedTxBits.expect(hello(c.U).peekInt().U, msgTx)
-          print(bufferedTx.exposedTxBits.peekInt().toChar)
-          c += 1
-        }
-        dut.clock.step(1)
+      for (ch <- expected) {
+        while (!dut.txValid.peekBoolean()) dut.clock.step()
+        dut.rxBits.expect(
+          ch.toInt.U,
+          s"expected '$ch', got '${dut.rxBits.peekInt().toChar}'"
+        )
+        dut.clock.step()
+        c += 1
       }
     }
   }

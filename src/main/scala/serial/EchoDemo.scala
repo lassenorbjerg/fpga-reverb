@@ -13,8 +13,8 @@ class EchoDemo(frequ: Int, baud: Int = 115200) extends Module {
   val uart = Module(new Echo(frequ, baud))
 
 
-  io.rx := uart.io.txd.asBool  // NOTE: Notice host := device
-  uart.io.rxd.asBool := io.tx  // NOTE: Notice device := host
+  io.tx := uart.io.txd.asBool  // NOTE: Notice device := host
+  uart.io.rxd := io.rx.asUInt  // NOTE: Notice host := device
 
   // For testing
 }
