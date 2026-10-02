@@ -334,3 +334,15 @@ A typical example for windows
 ```sh
 python scripts/serial_send.py COM3
 ```
+
+
+___
+
+```
+
+python scripts/serial_recv.py -h, python scripts/serial_send.py -h: the CLIs parse.
+python scripts/serial_send.py --no-serial --recv play: you hear your mic with about 100 ms of delay (use headphones).
+python scripts/serial_send.py --no-serial --recv hex: a hex dump scrolls.
+With the Basys3 echo design: python scripts/serial_send.py COM3 -b <baud> --recv play plays the echoed audio, and --recv hex shows the echoed bytes. python scripts/serial_recv.py COM3 -m hex works on its own.
+
+```
