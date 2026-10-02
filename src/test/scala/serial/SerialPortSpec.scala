@@ -104,21 +104,76 @@ class BufferedTxDemoWrite extends AnyFlatSpec with ChiselScalatestTester {
   }
 }
 
+// class EchoDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
+//   "EchoDemo" should "echo" in {
+//     test(new EchoTestTop()) { dut =>
+//       dut.clock.setTimeout(0)
+//       val expected = "Hello World!\n"
+//       var c = 0
+//       for (ch <- expected) {
+//         while (!dut.txValid.peekBoolean()) dut.clock.step()
+//         dut.rxBits.expect(
+//           ch.toInt.U,
+//           s"expected '$ch', got '${dut.rxBits.peekInt().toChar}'"
+//         )
+//         dut.clock.step()
+//         c += 1
+//       }
+//     }
+//   }
+// }
+
+/* 
+Echo spec written by opus 5.5
+ */
 class EchoDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
-  "EchoDemo" should "echo" in {
-    test(new EchoTestTop()) { dut =>
-      dut.clock.setTimeout(0)
-      val expected = "Hello World!\n"
-      var c = 0
-      for (ch <- expected) {
-        while (!dut.txValid.peekBoolean()) dut.clock.step()
-        dut.rxBits.expect(
-          ch.toInt.U,
-          s"expected '$ch', got '${dut.rxBits.peekInt().toChar}'"
-        )
-        dut.clock.step()
-        c += 1
-      }
+  // Keep the clock/baud ratio small for fast sims, but >= ~8 so Rx can sample mid-bit
+  val frequ   = 1000
+  val baud    = 100
+  val bitTime = frequ / baud // clock cycles per bit
+
+  /** Host -> FPGA: start bit, 8 data bits LSB first, 2 stop bits */
+  def sendByte(dut: EchoDemo, b: Int): Unit = {
+    val bits = Seq(0) ++ (0 until 8).map(i => (b >> i) & 1) ++ Seq(1, 1)
+    for (bit <- bits) {
+      dut.io.rx.poke((bit == 1).B)
+      dut.clock.step(bitTime)
+    }
+  }
+
+  /** FPGA -> host: wait for start bit, then sample each bit in its middle */
+  def receiveByte(dut: EchoDemo, maxWait: Int = 50 * 10): Int = {
+    var waited = 0
+    while (dut.io.tx.peekBoolean()) {
+      dut.clock.step()
+      waited += 1
+      assert(waited < maxWait * bitTime, "timed out waiting for start bit")
+    }
+    dut.clock.step(bitTime / 2)
+    assert(!dut.io.tx.peekBoolean(), "start bit was a glitch")
+
+    var b = 0
+    for (i <- 0 until 8) {
+      dut.clock.step(bitTime)
+      if (dut.io.tx.peekBoolean()) b |= 1 << i
+    }
+    dut.clock.step(bitTime)
+    assert(dut.io.tx.peekBoolean(), "missing stop bit")
+    b
+  }
+
+  "EchoDemo" should "echo bytes back to the host" in {
+    test(new EchoDemo(frequ, baud)) { dut =>
+      val msg = "Hello World!"
+
+      dut.io.rx.poke(true.B)      // idle line is high
+      dut.clock.step(bitTime * 2) // let Rx's sync registers settle
+
+      val host = fork { msg.foreach(c => sendByte(dut, c)) } // host transmitter
+      val echoed = msg.map(_ => receiveByte(dut).toChar)     // host receiver (main thread)
+      host.join()
+
+      assert(echoed == msg, s"got '$echoed'")
     }
   }
 }
