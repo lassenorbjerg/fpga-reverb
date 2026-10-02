@@ -202,6 +202,10 @@ sbt.version = 1.13.0
 
 Development notes are added here
 
+
+
+
+
 ## Tests
 
 ### serialRecvSpec
@@ -216,6 +220,21 @@ Development notes are added here
 ## Synthesize to Hardware
 
 Vivado will be used.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ___
 
 # Practical
@@ -345,4 +364,9 @@ python scripts/serial_send.py --no-serial --recv play: you hear your mic with ab
 python scripts/serial_send.py --no-serial --recv hex: a hex dump scrolls.
 With the Basys3 echo design: python scripts/serial_send.py COM3 -b <baud> --recv play plays the echoed audio, and --recv hex shows the echoed bytes. python scripts/serial_recv.py COM3 -m hex works on its own.
 
+
+python scripts/serial_send.py COM4 -b <baud> --recv play   # send mic, play what comes back
+python scripts/serial_send.py COM4 -b <baud> --recv hex    # send mic, print the returned bytes
+python scripts/serial_recv.py COM4 -m hex                  # receive only
+python scripts/serial_send.py --no-serial --recv play      # no board: loops your mic back to the speakers
 ```
