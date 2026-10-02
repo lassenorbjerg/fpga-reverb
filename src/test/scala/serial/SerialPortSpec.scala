@@ -15,18 +15,10 @@ class BufferedTxDemoExposed(frequ: Int = 10, baud: Int = 10)
 }
 
 class EchoDemoExposed(frequ: Int = 10, baud: Int = 10)
-    extends EchoDemo(frequ, baud) {}
+    extends EchoDemo(frequ, baud) {
+      val exposedUart = expose(uart)
+    }
 
-class BufferedTxDemoExposed(frequ: Int = 10, baud: Int = 10)
-    extends BufferedTxDemo(frequ, baud) {
-  // Tx prefix is used for the bufferedTx signals
-  val exposedTxValid = expose(valid)
-  val exposedTxReady = expose(ready)
-  val exposedTxBits = expose(bits)
-  val exposedTxC = expose(c)
-  val exposedTxC_t = expose(c_t)
-  val exposedTxHello = expose(hello)
-}
 
 class BufferedTxDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
   "BufferedTxDemo " should "pass" in {
@@ -103,7 +95,7 @@ class EchoDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.rx.poke(bufferedTx.io.tx)
       dut.clock.setTimeout(0)
 
-      val c = 0
+      var c = 0
       var hello = bufferedTx.exposedTxHello
 
       while (bufferedTx.exposedTxBits.peekInt().toChar != '\n') {
@@ -114,9 +106,9 @@ class EchoDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
             s"${hello(c.U).peekInt().toChar} does not match " + dut.io.tx
               .peekInt()
               .toChar
-          dut.io.tx.expect(hello(c.U).peekInt().U)  // TODO: should look at the bits
+          dut.uart.tx.channel.bits.expect(hello(c.U).peekInt().U, msgEcho)  // TODO: should look at the bits
           val msgTx =
-            "bufferedTx failed: " + s"${hello(c.U).peekInt().toChar} does not match " + dut.exposedTxBits
+            "bufferedTx failed: " + s"${hello(c.U).peekInt().toChar} does not match " + bufferedTx.exposedTxBits
               .peekInt()
               .toChar
           bufferedTx.exposedTxBits.expect(hello(c.U).peekInt().U, msgTx)

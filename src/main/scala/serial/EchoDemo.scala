@@ -13,11 +13,10 @@ class EchoDemo(frequ: Int, baud: Int = 115200) extends Module {
   val uart = Module(new Echo(frequ, baud))
 
 
-  io.rx := uart.io.txd.asBool  // NOTE: Notice drive and receiver
-  uart.io.rxd.asBool := io.tx  // NOTE: Notice drive and receiver
+  io.rx := uart.io.txd.asBool  // NOTE: Notice host := device
+  uart.io.rxd.asBool := io.tx  // NOTE: Notice device := host
 
   // For testing
-
 }
 
 // generate Verilog
