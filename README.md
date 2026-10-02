@@ -6,6 +6,17 @@ Real-time audio effects using an FPGA
 
 Go to [test](#practical)
 
+## Glossary
+
+- Host
+```
+The pc with connections to a microphone and a speaker. Sends data through UART.
+```
+- Device
+```
+The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART.
+```
+
 # 0.3.2 - Using FIFO to delay input
 
 This is building on top of Third iteration.
