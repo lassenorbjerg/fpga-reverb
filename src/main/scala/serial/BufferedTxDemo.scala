@@ -4,7 +4,7 @@ import chisel.lib.uart._
 
 /** This is the top level to for the UART output and a test blinking LED.
   */
-class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
+class BufferedTxDemo(frequ: Int, baud: Int = 115200) extends Module {
   val io = IO(new Bundle {
     val tx = Output(Bool())
     val led = Output(Bool())
@@ -13,7 +13,6 @@ class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
 
   })
 
-  // val uart = Module(new Echo(frequ, baud))
   val uart = Module(new BufferedTx(frequ, baud))
 
   val msg_len = 12.U
@@ -64,12 +63,12 @@ class SerialPort(frequ: Int, baud: Int = 115200) extends Module {
   val ready = uart.io.channel.ready
   val bits = WireDefault(0.U(8.W))
   bits := hello(cntr)
-  
+
   val c = cntr
   val c_t = cntr_time
 }
 
 // generate Verilog
-object SerialPort extends App {
-  emitVerilog(new SerialPort(100000000))
+object BufferedTxDemo extends App {
+  emitVerilog(new BufferedTxDemo(100000000))
 }

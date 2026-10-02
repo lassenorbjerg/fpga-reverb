@@ -161,6 +161,7 @@ Assuming one baud cycle.
 fpga-reverb/
 ├── build.sbt
 ├── project/
+│   ├── build.properties
 ├── scripts/
 │   ├── requirements.txt
 │   ├── serial_recv.py
@@ -178,6 +179,12 @@ fpga-reverb/
 │               └── serialRecvSpec.scala
 ├── Basys3_Master.xdc
 └── README.md
+```
+
+### build.properties
+
+```
+sbt.version = 1.13.0
 ```
 
 ## Implement in Chisel

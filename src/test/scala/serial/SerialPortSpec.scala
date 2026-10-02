@@ -3,26 +3,34 @@ import chiseltest._
 import chiseltest.experimental.expose
 import org.scalatest.flatspec.AnyFlatSpec
 
-class SerialPortExposed(frequ: Int = 10, baud: Int = 10)
-    extends SerialPort(frequ, baud) {
-      // Tx prefix is used for the bufferedTx signals
-      val exposedTxValid = expose(valid)
-      val exposedTxReady = expose(ready)
-      val exposedTxBits = expose(bits)
-      val exposedTxC = expose(c)
-      val exposedTxC_t = expose(c_t)
-      val exposedTxHello = expose(hello)
-
-      // FIXME:
-      // val exposedRxValid = expose(io.rx.valid)
-      // val exposedRxReady = expose(io.rx.ready)
-      // val exposedRxBits = expose(io.rx.bits)
-
+class BufferedTxDemoExposed(frequ: Int = 10, baud: Int = 10)
+    extends BufferedTxDemo(frequ, baud) {
+  // Tx prefix is used for the bufferedTx signals
+  val exposedTxValid = expose(valid)
+  val exposedTxReady = expose(ready)
+  val exposedTxBits = expose(bits)
+  val exposedTxC = expose(c)
+  val exposedTxC_t = expose(c_t)
+  val exposedTxHello = expose(hello)
 }
 
-class SerialPortSpec extends AnyFlatSpec with ChiselScalatestTester {
-  "SerialPort " should "pass" in {
-    test(new SerialPortExposed()) { dut =>
+class EchoDemoExposed(frequ: Int = 10, baud: Int = 10)
+    extends EchoDemo(frequ, baud) {}
+
+class BufferedTxDemoExposed(frequ: Int = 10, baud: Int = 10)
+    extends BufferedTxDemo(frequ, baud) {
+  // Tx prefix is used for the bufferedTx signals
+  val exposedTxValid = expose(valid)
+  val exposedTxReady = expose(ready)
+  val exposedTxBits = expose(bits)
+  val exposedTxC = expose(c)
+  val exposedTxC_t = expose(c_t)
+  val exposedTxHello = expose(hello)
+}
+
+class BufferedTxDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
+  "BufferedTxDemo " should "pass" in {
+    test(new BufferedTxDemoExposed()) { dut =>
       dut.clock.setTimeout(0)
       println(dut.exposedTxReady.peek())
       while (dut.exposedTxBits.peekInt().toChar != '\n') {
@@ -56,9 +64,9 @@ class SerialPortSpec extends AnyFlatSpec with ChiselScalatestTester {
 // when sender has valid data
 //
 
-class SerialPortWrite extends AnyFlatSpec with ChiselScalatestTester {
-  "SerialPort " should "write Hello World!" in {
-    test(new SerialPortExposed()) { dut =>
+class BufferedTxDemoWrite extends AnyFlatSpec with ChiselScalatestTester {
+  "BufferedTxDemo " should "write Hello World!" in {
+    test(new BufferedTxDemoExposed()) { dut =>
       dut.clock.setTimeout(0)
       dut.exposedTxBits.expect('H'.U)
       while (!dut.exposedTxReady.peekBoolean()) {
@@ -88,13 +96,35 @@ class SerialPortWrite extends AnyFlatSpec with ChiselScalatestTester {
   }
 }
 
-// class SerialPortRead extends AnyFlatSpec with ChiselScalatestTester {
-//   "SerialPort" should "read" in {
-//     test(new SerialPortExposed()) { dut =>
-//       dut.clock.setTimeout(0)
-//       dut.exposedRxValid.peek()
-//       dut.exposedRxReady.peek()
-//       dut.exposedRxBits.peek()
-//     }
-//   }
-// }
+class EchoDemoSpec extends AnyFlatSpec with ChiselScalatestTester {
+  "EchoDemo" should "echo" in {
+    test(new EchoDemoExposed()) { dut =>
+      val bufferedTx = new BufferedTxDemoExposed() // dogfooding🤤
+      dut.io.rx.poke(bufferedTx.io.tx)
+      dut.clock.setTimeout(0)
+
+      val c = 0
+      var hello = bufferedTx.exposedTxHello
+
+      while (bufferedTx.exposedTxBits.peekInt().toChar != '\n') {
+        
+        if (bufferedTx.exposedTxReady.peekBoolean()) {
+          bufferedTx.exposedTxC.expect(c.U)
+          val msgEcho =
+            s"${hello(c.U).peekInt().toChar} does not match " + dut.io.tx
+              .peekInt()
+              .toChar
+          dut.io.tx.expect(hello(c.U).peekInt().U)  // TODO: should look at the bits
+          val msgTx =
+            "bufferedTx failed: " + s"${hello(c.U).peekInt().toChar} does not match " + dut.exposedTxBits
+              .peekInt()
+              .toChar
+          bufferedTx.exposedTxBits.expect(hello(c.U).peekInt().U, msgTx)
+          print(bufferedTx.exposedTxBits.peekInt().toChar)
+          c += 1
+        }
+        dut.clock.step(1)
+      }
+    }
+  }
+}
