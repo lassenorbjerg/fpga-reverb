@@ -59,6 +59,10 @@ Host sends audio through UART.
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
+# 0.1.1 - Increasing Baud rate
+
+Same as 0.1.0 but with a baud rate of 32_000.
+
 # 0.1.0* - Sending and receiving audio
 
 This is the first iteration of the design.
@@ -202,7 +206,7 @@ sbt.version = 1.13.0
 
 Development notes are added here
 
-
+Audio is very distorted. Baud rate is the bottle neck
 
 
 
