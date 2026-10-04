@@ -1,3 +1,248 @@
+# FPGA Reverb
+
+Real-time audio effects using an FPGA
+
+`*-postfix` is the current version. There are branches for each version.
+
+Go to [test](#practical)
+
+## Glossary
+
+- Host
+```
+The pc with connections to a microphone and a speaker. Sends data through UART.
+```
+- Device
+```
+The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART.
+```
+
+# 0.3.2 - Using FIFO to delay input
+
+This is building on top of Third iteration.
+
+## Microarchitecture Design
+
+Delay FIFO. e.g. 10 clock cycles to see in simulation.
+
+Delay FIFO multiple ms
+
+### Modules
+
+- UART Send module (serialSend)
+- UART Receive module (serialRecv)
+- Memory module (memoryManager)
+  - Receives data from serialRecv
+  - Saves it in BRAM FIFO
+  - Sends it to serialSend after configurable amount of clock cycles
+
+# 0.3.1 - Creating FIFO in BRAM
+
+This is building on top of Third iteration.
+
+Create a FIFO using BRAM.
+
+
+# 0.3.0 - creating BRAM
+
+This is the Third iteration of the design.
+
+Save a value in BRAM.
+Vivado should say that BRAM is created
+
+# 0.2.0 - controlling volume
+
+This is the second iteration of the design.
+
+Host sends audio through UART.
+
+Device also have switches as input.
+Device sends audio back scaled by switches through UART.
+
+# 0.1.1 - Increasing Baud rate
+
+Same as 0.1.0 but with a baud rate of 32_000.
+
+# 0.1.0* - Sending and receiving audio
+
+This is the first iteration of the design.
+
+Here we just want host sending input through UART.
+Device sending it back unaltered through UART.
+
+## Hardware Specification (Device)
+### Inputs
+
+The host sends microphone data through UART
+- PCM samples as UART bytes
+  - 8 bits + 2 (start,stop)
+
+### Outputs
+
+The host receives data through UART
+- Unaltered PCM input
+  - Same format as input
+
+### Clock and reset behavior
+
+- One clock cycle delay?
+  - Save in register, might be needed
+  - The baud rate vs global clock muddies what this delay means
+- Reset resets the UART handshake
+
+### Data widths and numeric formats
+
+- pcm data will be uint8
+
+### Latency and throughput
+
+- Should not notice a delay when audio is playing back
+
+### Memory requirements
+
+- BRAM is not used in this iteration. One layer buffer might be all that is needed
+- Possibly big enough to have one sample block
+
+### Error and corner-case behavior
+
+- Dropping samples
+- Clipping
+- Distorted playback
+
+### Target
+
+- Basys3 FPGA board
+
+## Microarchitecture Design
+
+### Modules
+
+- UART Send module (serialSend)
+- UART Receive module (serialRecv)
+
+For 0.1.0 we connect them directly
+```
+serialSend.bits := serialRecv.bits
+```
+
+### Protocols
+
+Interfaces using ready/valid, buses, or custom protocols
+
+- UART Protocol
+  - serialSend
+  - serialRecv
+
+### Memory Placement and Type
+
+- UART uses registers to match clock speed with baud rate
+
+### FSMD
+
+![alt text](docs/fsmd0_1_0.drawio.svg)
+
+### Area Estimation
+
+- Tx
+  - 10 bits for Tx shift reg
+  - counter reg is 20 bits
+  - bits reg is 4 bits
+  - 2x equality (20.w+4.w)
+  - 1x not (4)
+  - 1x and (1w&1w)
+  - 1 x right shift (10.w)
+  - 1 x adder (4.w)
+- Rx
+  - Similar to Tx
+
+#### Rough estimate
+- eq = ceil(60 / 6) +  ceil(12 / 6) = 12
+- not = 1
+- and = 1
+- right shift = ceil(30 / 6) = 5
+- adder = 2
+- 12+1+1+5+2 = 21 6LUT
+
+- total: ~50 6LUT (RX has more than Tx)
+- 80 x dff (RX has more than Tx)
+
+### Latency Estimation
+
+Assuming one baud cycle.
+
+## Chisel File Structure
+
+```
+fpga-reverb/
+├── build.sbt
+├── project/
+│   ├── build.properties
+├── scripts/
+│   ├── requirements.txt
+│   ├── serial_recv.py
+│   └── serial_send.py
+├── src/
+│   ├── main/
+│   │   └── scala/
+│   │       └── serial/
+│   │           ├── serialSend.scala
+│   │           └── serialRecv.scala
+│   └── test/
+│       └── scala/
+│           └── serial/
+│               ├── serialSendSpec.scala
+│               └── serialRecvSpec.scala
+├── Basys3_Master.xdc
+└── README.md
+```
+
+### build.properties
+
+```
+sbt.version = 1.13.0
+```
+
+## Implement in Chisel
+
+Development notes are added here
+
+Audio is very distorted. Baud rate is the bottle neck
+
+
+
+## Tests
+
+### serialRecvSpec
+
+- UART host sender needs to be mocked (senderMock)
+- Are the values from senderMock set in 
+
+### serialSendSpec
+
+
+
+## Synthesize to Hardware
+
+Vivado will be used.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+___
+
+# Practical
+
 ## Development setup (VS Code + Metals)
 
 ### One-time setup per computer
@@ -54,3 +299,78 @@ sbt run
 ### Debugging
 
 Ensure `emitVerilog` in object
+
+
+## Host Setup
+
+### Installing dependencies
+
+```sh
+cd scripts/
+```
+
+The rest of the commands are assumed to be in `scripts/`
+
+```sh
+python -m venv .venv
+```
+
+#### Bash
+```sh
+source .venv/bin/activate
+```
+
+#### Powershell
+
+```ps1
+.\.venv\Scripts\activate.ps1
+```
+
+___
+
+Should look like this after activating
+```sh
+(.venv) fpga-reverb/scripts>
+```
+The rest of the commands are assumed to be in the activated virtual environment.
+___
+To install the dependencies run
+
+```sh
+pip install -r ./requirements.txt
+```
+
+### Running script
+
+Help found at
+```sh
+python ./serial_send.py --help
+```
+
+Simple usage
+```
+python ./serial_send.py MIC_PORT
+```
+
+
+A typical example for windows
+```sh
+python scripts/serial_send.py COM3
+```
+
+
+___
+
+```
+
+python scripts/serial_recv.py -h, python scripts/serial_send.py -h: the CLIs parse.
+python scripts/serial_send.py --no-serial --recv play: you hear your mic with about 100 ms of delay (use headphones).
+python scripts/serial_send.py --no-serial --recv hex: a hex dump scrolls.
+With the Basys3 echo design: python scripts/serial_send.py COM3 -b <baud> --recv play plays the echoed audio, and --recv hex shows the echoed bytes. python scripts/serial_recv.py COM3 -m hex works on its own.
+
+
+python scripts/serial_send.py COM4 -b <baud> --recv play   # send mic, play what comes back
+python scripts/serial_send.py COM4 -b <baud> --recv hex    # send mic, print the returned bytes
+python scripts/serial_recv.py COM4 -m hex                  # receive only
+python scripts/serial_send.py --no-serial --recv play      # no board: loops your mic back to the speakers
+```
