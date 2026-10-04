@@ -59,10 +59,9 @@ Host sends audio through UART.
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
-# 0.1.3 - Receiving bit depth package
+# 0.1.3 - Registering FPGA as a usb device 
 
-Receive and send e.g. 24-bit data in 3 packets of 1 byte. Focus on clarity rather than latency.
-
+https://github.com/WangXuan95/FPGA-USB-Device
 
 # 0.1.2* - Use file instead of microphone
 
