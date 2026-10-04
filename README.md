@@ -59,7 +59,15 @@ Host sends audio through UART.
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
-# 0.1.1* - Increasing Baud rate
+# 0.1.2* - Use file instead of microphone
+
+Send an audio file through uart and build the file from response.
+
+Start receive = 8'11111111 8'00000000
+Stop receive = 8'11111111 8'00000000
+
+
+# 0.1.1 - Increasing Baud rate
 
 Same as 0.1.0 but with a baud rate of 320_000.
 
