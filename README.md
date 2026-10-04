@@ -59,12 +59,33 @@ Host sends audio through UART.
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
+# 0.1.3 - Receiving bit depth package
+
+Receive and send e.g. 24-bit data in 3 packets of 1 byte. Focus on clarity rather than latency.
+
+
 # 0.1.2* - Use file instead of microphone
 
 Send an audio file through uart and build the file from response.
 
 Start receive = 8'11111111 8'00000000
 Stop receive = 8'11111111 8'00000000
+
+Start and stop are the same, and `FF 00` is common inside 16-bit audio, so the host escapes every
+`FF` byte in the file as `FF FF`. Inside a frame `FF FF` is one data byte `FF` and `FF 00` is stop.
+The echo design returns the bytes unchanged, so the escaping survives the round trip.
+
+```
+FF 00 | file bytes, each FF sent as FF FF | FF 00
+```
+
+```sh
+python scripts/serial_file.py COM3 audio.wav               # send file, save what comes back
+python scripts/serial_file.py COM3 --recv-only             # only wait for a file
+python scripts/serial_file.py --no-serial audio.wav        # loopback test, no board
+```
+
+Received files are saved in `scripts/received_file/`.
 
 
 # 0.1.1 - Increasing Baud rate
@@ -189,6 +210,7 @@ fpga-reverb/
 │   ├── build.properties
 ├── scripts/
 │   ├── requirements.txt
+│   ├── serial_file.py
 │   ├── serial_recv.py
 │   └── serial_send.py
 ├── src/

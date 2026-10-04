@@ -536,3 +536,6 @@ coursier
 # Sourcegraph specific
 index.scip
 CLAUDE.md
+
+# serial_file.py output
+scripts/received_file/
