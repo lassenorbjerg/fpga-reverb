@@ -63,6 +63,8 @@ Device sends audio back scaled by switches through UART.
 
 Same as 0.1.0 but with a baud rate of 320_000.
 
+USB baud rate is not easily changeable.
+
 # 0.1.0 - Sending and receiving audio
 
 This is the first iteration of the design.
