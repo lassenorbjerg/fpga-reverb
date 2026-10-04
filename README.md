@@ -59,11 +59,11 @@ Host sends audio through UART.
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
-# 0.1.1 - Increasing Baud rate
+# 0.1.1* - Increasing Baud rate
 
-Same as 0.1.0 but with a baud rate of 32_000.
+Same as 0.1.0 but with a baud rate of 320_000.
 
-# 0.1.0* - Sending and receiving audio
+# 0.1.0 - Sending and receiving audio
 
 This is the first iteration of the design.
 
