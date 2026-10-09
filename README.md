@@ -59,11 +59,11 @@ Host sends audio through UART.
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
-# 0.1.3 - Registering FPGA as a usb device 
+# 0.1.3* - Registering FPGA as a usb device 
 
 https://github.com/WangXuan95/FPGA-USB-Device
 
-# 0.1.2* - Use file instead of microphone
+# 0.1.2 - Use file instead of microphone
 
 Send an audio file through uart and build the file from response.
 
