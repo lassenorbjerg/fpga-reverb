@@ -59,11 +59,55 @@ Host sends audio through UART.
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
+# 0.1.3* - Registering FPGA as a usb device 
+
+https://github.com/WangXuan95/FPGA-USB-Device
+
+It has been added as a submodule.
+
+The [USB Audio top](FPGA-USB-Device/RTL/usb_class/usb_audio_top.v) will be used.
+
+It requires 60MHz clock :/
+
+Clocking guide: https://docs.amd.com/v/u/en-US/ug472_7Series_Clocking
+
+> The USB audio device implements speaker + microphone. The file hierarchy is as follows. Please add these files to the FPGA project, compile and program it to the FPGA.
+> - RTL/fpga_examples/**fpga_top_usb_audio.v**
+>   - RTL/usb_class/**usb_audio_top.v**
+>     - RTL/usbfs_core/**usbfs_core_top.v**
+>       - Other .v files in RTL/usbfs_core/
+
+# 0.1.2 - Use file instead of microphone
+
+Send an audio file through uart and build the file from response.
+
+Start receive = 8'11111111 8'00000000
+Stop receive = 8'11111111 8'00000000
+
+Start and stop are the same, and `FF 00` is common inside 16-bit audio, so the host escapes every
+`FF` byte in the file as `FF FF`. Inside a frame `FF FF` is one data byte `FF` and `FF 00` is stop.
+The echo design returns the bytes unchanged, so the escaping survives the round trip.
+
+```
+FF 00 | file bytes, each FF sent as FF FF | FF 00
+```
+
+```sh
+python scripts/serial_file.py COM3 audio.wav               # send file, save what comes back
+python scripts/serial_file.py COM3 --recv-only             # only wait for a file
+python scripts/serial_file.py --no-serial audio.wav        # loopback test, no board
+```
+
+Received files are saved in `scripts/received_file/`.
+
+
 # 0.1.1 - Increasing Baud rate
 
-Same as 0.1.0 but with a baud rate of 32_000.
+Same as 0.1.0 but with a baud rate of 320_000.
 
-# 0.1.0* - Sending and receiving audio
+USB baud rate is not easily changeable.
+
+# 0.1.0 - Sending and receiving audio
 
 This is the first iteration of the design.
 
@@ -179,6 +223,7 @@ fpga-reverb/
 │   ├── build.properties
 ├── scripts/
 │   ├── requirements.txt
+│   ├── serial_file.py
 │   ├── serial_recv.py
 │   └── serial_send.py
 ├── src/

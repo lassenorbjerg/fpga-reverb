@@ -1,6 +1,6 @@
 ### Project Specific stuff
+ignored/
 *.anno.json
-*.v
 *.fir
 test_run_dir/*
 .metals
@@ -537,3 +537,6 @@ coursier
 # Sourcegraph specific
 index.scip
 CLAUDE.md
+
+# serial_file.py output
+scripts/received_file/
