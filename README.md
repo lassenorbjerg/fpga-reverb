@@ -63,6 +63,20 @@ Device sends audio back scaled by switches through UART.
 
 https://github.com/WangXuan95/FPGA-USB-Device
 
+It has been added as a submodule.
+
+The [USB Audio top](FPGA-USB-Device/RTL/usb_class/usb_audio_top.v) will be used.
+
+It requires 60MHz clock :/
+
+Clocking guide: https://docs.amd.com/v/u/en-US/ug472_7Series_Clocking
+
+> The USB audio device implements speaker + microphone. The file hierarchy is as follows. Please add these files to the FPGA project, compile and program it to the FPGA.
+> - RTL/fpga_examples/**fpga_top_usb_audio.v**
+>   - RTL/usb_class/**usb_audio_top.v**
+>     - RTL/usbfs_core/**usbfs_core_top.v**
+>       - Other .v files in RTL/usbfs_core/
+
 # 0.1.2 - Use file instead of microphone
 
 Send an audio file through uart and build the file from response.

@@ -1,4 +1,5 @@
 ### Project Specific stuff
+ignored/
 *.anno.json
 *.fir
 test_run_dir/*
