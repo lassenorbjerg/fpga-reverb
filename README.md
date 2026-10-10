@@ -54,12 +54,24 @@ Vivado should say that BRAM is created
 
 This is the second iteration of the design.
 
+___
+
+## Plan
+
 Host sends audio through UART.
 
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
-# 0.1.3* - Registering FPGA as a usb device 
+### FSMD
+
+## Dev notes
+
+# 0.1.4 - Increasing BAUD rate of port
+
+Baud rate can be changed for a port.
+
+# 0.1.3* - ~~Registering FPGA as a usb device ~~ CANCELLED
 
 https://github.com/WangXuan95/FPGA-USB-Device
 
