@@ -50,6 +50,10 @@ This is the Third iteration of the design.
 Save a value in BRAM.
 Vivado should say that BRAM is created
 
+# 0.2.1 - Look at existing IP blocks
+
+
+
 # 0.2.0 - controlling volume
 
 This is the second iteration of the design.
@@ -67,9 +71,22 @@ Device sends audio back scaled by switches through UART.
 
 ## Dev notes
 
+
 # 0.1.4 - Increasing BAUD rate of port
 
 Baud rate can be changed for a port.
+
+1. Open device manger
+2. Go to ports (COM & LPT)
+3. Right click USB Serial Port
+4. Properties
+5. Port settings
+6. Bits per second
+7. Set to 921600
+
+```
+python .\scripts\serial_send.py COM4 -b 921600 --recv play
+```
 
 # 0.1.3* - ~~Registering FPGA as a usb device ~~ CANCELLED
 

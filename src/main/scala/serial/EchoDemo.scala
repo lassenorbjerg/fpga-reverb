@@ -21,5 +21,5 @@ class EchoDemo(frequ: Int, baud: Int = 115200) extends Module {
 
 // generate Verilog
 object EchoDemo extends App {
-  emitVerilog(new EchoDemo(100000000,320_000))
+  emitVerilog(new EchoDemo(100000000,921_600))
 }
