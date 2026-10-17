@@ -88,6 +88,27 @@ Baud rate can be changed for a port.
 python .\scripts\serial_send.py COM4 -b 921600 --recv play
 ```
 
+## Debugging the UART
+
+`scripts/uart_debug.py` checks the link itself rather than the audio going
+over it. It defaults to the baud rate it reads back out of `EchoDemo.v`, so it
+cannot silently test at the wrong rate.
+
+```
+python scripts/uart_debug.py --mode check          # framing maths, no board needed
+python scripts/uart_debug.py COM4                  # echo test + diagnosis
+python scripts/uart_debug.py COM4 --mode sweep     # which baud is the bitstream using?
+python scripts/uart_debug.py COM4 --mode framing   # stop-bit / parity mismatch
+python scripts/uart_debug.py COM4 --mode monitor --seconds 5 --send
+python scripts/uart_debug.py COM4 --mode monitor --hold    # record while SPACE is held
+python scripts/uart_debug.py --loop                # exercise the script, no board
+```
+
+At 100 MHz and 921600 baud the divider lands on 109 cycles per bit, so the
+FPGA actually runs at 917,431 baud (-0.45%). That costs 4.3% of a bit cell by
+the stop bit, against a 50% budget -- fine, but it is the first thing to check
+when bytes start arriving corrupted in their high bits.
+
 # 0.1.3* - ~~Registering FPGA as a usb device ~~ CANCELLED
 
 https://github.com/WangXuan95/FPGA-USB-Device
@@ -254,7 +275,8 @@ fpga-reverb/
 │   ├── requirements.txt
 │   ├── serial_file.py
 │   ├── serial_recv.py
-│   └── serial_send.py
+│   ├── serial_send.py
+│   └── uart_debug.py
 ├── src/
 │   ├── main/
 │   │   └── scala/
