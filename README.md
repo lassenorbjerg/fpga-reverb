@@ -17,7 +17,7 @@ The pc with connections to a microphone and a speaker. Sends data through UART.
 The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART.
 ```
 
-# 0.3.2 - Using FIFO to delay input
+# 0.4.2 - Using FIFO to delay input
 
 This is building on top of Third iteration.
 
@@ -36,30 +36,85 @@ Delay FIFO multiple ms
   - Saves it in BRAM FIFO
   - Sends it to serialSend after configurable amount of clock cycles
 
-# 0.3.1 - Creating FIFO in BRAM
+# 0.4.1 - Creating FIFO in BRAM
 
 This is building on top of Third iteration.
 
 Create a FIFO using BRAM.
 
 
-# 0.3.0 - creating BRAM
+# 0.4.0 - creating BRAM
 
 This is the Third iteration of the design.
 
 Save a value in BRAM.
 Vivado should say that BRAM is created
 
-# 0.2.0 - controlling volume
+# 0.2.1 - Look at existing IP blocks
+
+
+
+# 0.3.0 - controlling volume
 
 This is the second iteration of the design.
+
+___
+
+## Plan
 
 Host sends audio through UART.
 
 Device also have switches as input.
 Device sends audio back scaled by switches through UART.
 
-# 0.1.3* - Registering FPGA as a usb device 
+### FSMD
+
+## Dev notes
+
+
+# 0.2.0 - Create software reference model for goals in python*
+
+🩷
+
+
+# 0.1.4 - Increasing BAUD rate of port (Left open for later if there is time)
+
+Baud rate can be changed for a port.
+
+1. Open device manger
+2. Go to ports (COM & LPT)
+3. Right click USB Serial Port
+4. Properties
+5. Port settings
+6. Bits per second
+7. Set to 921600
+
+```
+python .\scripts\serial_send.py COM4 -b 921600 --recv play
+```
+
+## Debugging the UART
+
+`scripts/uart_debug.py` checks the link itself rather than the audio going
+over it. It defaults to the baud rate it reads back out of `EchoDemo.v`, so it
+cannot silently test at the wrong rate.
+
+```
+python scripts/uart_debug.py --mode check          # framing maths, no board needed
+python scripts/uart_debug.py COM4                  # echo test + diagnosis
+python scripts/uart_debug.py COM4 --mode sweep     # which baud is the bitstream using?
+python scripts/uart_debug.py COM4 --mode framing   # stop-bit / parity mismatch
+python scripts/uart_debug.py COM4 --mode monitor --seconds 5 --send
+python scripts/uart_debug.py COM4 --mode monitor --hold    # record while SPACE is held
+python scripts/uart_debug.py --loop                # exercise the script, no board
+```
+
+At 100 MHz and 921600 baud the divider lands on 109 cycles per bit, so the
+FPGA actually runs at 917,431 baud (-0.45%). That costs 4.3% of a bit cell by
+the stop bit, against a 50% budget -- fine, but it is the first thing to check
+when bytes start arriving corrupted in their high bits.
+
+# 0.1.3* - ~~Registering FPGA as a usb device ~~ CANCELLED
 
 https://github.com/WangXuan95/FPGA-USB-Device
 
@@ -225,7 +280,8 @@ fpga-reverb/
 │   ├── requirements.txt
 │   ├── serial_file.py
 │   ├── serial_recv.py
-│   └── serial_send.py
+│   ├── serial_send.py
+│   └── uart_debug.py
 ├── src/
 │   ├── main/
 │   │   └── scala/

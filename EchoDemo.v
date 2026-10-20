@@ -37,7 +37,7 @@ module Tx(
     if (reset) begin // @[src/main/scala/chisel/lib/uart/Uart.scala 31:23]
       cntReg <= 20'h0; // @[src/main/scala/chisel/lib/uart/Uart.scala 31:23]
     end else if (_io_channel_ready_T) begin // @[src/main/scala/chisel/lib/uart/Uart.scala 37:24]
-      cntReg <= 20'h138; // @[src/main/scala/chisel/lib/uart/Uart.scala 39:12]
+      cntReg <= 20'h6c; // @[src/main/scala/chisel/lib/uart/Uart.scala 39:12]
     end else begin
       cntReg <= _cntReg_T_1; // @[src/main/scala/chisel/lib/uart/Uart.scala 54:12]
     end
@@ -289,13 +289,13 @@ module Rx(
       end
     end
     if (reset) begin // @[src/main/scala/chisel/lib/uart/Uart.scala 80:23]
-      cntReg <= 20'h138; // @[src/main/scala/chisel/lib/uart/Uart.scala 80:23]
+      cntReg <= 20'h6c; // @[src/main/scala/chisel/lib/uart/Uart.scala 80:23]
     end else if (cntReg != 20'h0) begin // @[src/main/scala/chisel/lib/uart/Uart.scala 84:24]
       cntReg <= _cntReg_T_1; // @[src/main/scala/chisel/lib/uart/Uart.scala 85:12]
     end else if (bitsReg != 4'h0) begin // @[src/main/scala/chisel/lib/uart/Uart.scala 86:31]
-      cntReg <= 20'h138; // @[src/main/scala/chisel/lib/uart/Uart.scala 87:12]
+      cntReg <= 20'h6c; // @[src/main/scala/chisel/lib/uart/Uart.scala 87:12]
     end else if (falling) begin // @[src/main/scala/chisel/lib/uart/Uart.scala 94:23]
-      cntReg <= 20'h1d3; // @[src/main/scala/chisel/lib/uart/Uart.scala 95:12]
+      cntReg <= 20'ha1; // @[src/main/scala/chisel/lib/uart/Uart.scala 95:12]
     end
     if (reset) begin // @[src/main/scala/chisel/lib/uart/Uart.scala 81:24]
       bitsReg <= 4'h0; // @[src/main/scala/chisel/lib/uart/Uart.scala 81:24]
