@@ -17,7 +17,7 @@ The pc with connections to a microphone and a speaker. Sends data through UART.
 The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART.
 ```
 
-# 0.3.2 - Using FIFO to delay input
+# 0.4.2 - Using FIFO to delay input
 
 This is building on top of Third iteration.
 
@@ -36,14 +36,14 @@ Delay FIFO multiple ms
   - Saves it in BRAM FIFO
   - Sends it to serialSend after configurable amount of clock cycles
 
-# 0.3.1 - Creating FIFO in BRAM
+# 0.4.1 - Creating FIFO in BRAM
 
 This is building on top of Third iteration.
 
 Create a FIFO using BRAM.
 
 
-# 0.3.0 - creating BRAM
+# 0.4.0 - creating BRAM
 
 This is the Third iteration of the design.
 
@@ -54,7 +54,7 @@ Vivado should say that BRAM is created
 
 
 
-# 0.2.0 - controlling volume
+# 0.3.0 - controlling volume
 
 This is the second iteration of the design.
 
@@ -72,7 +72,12 @@ Device sends audio back scaled by switches through UART.
 ## Dev notes
 
 
-# 0.1.4 - Increasing BAUD rate of port
+# 0.2.0 - Create software reference model for goals in python*
+
+🩷
+
+
+# 0.1.4 - Increasing BAUD rate of port (Left open for later if there is time)
 
 Baud rate can be changed for a port.
 
