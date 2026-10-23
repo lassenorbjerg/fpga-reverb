@@ -17,9 +17,13 @@ October 2026
 
 ### Hardware
 
-FPGA board is the Basys3 board[^1].
+FPGA board is the Basys3 board[^1]. It is part of the artix-7 35t family[^1].
 
-Any microphone can be used. 
+For completeness. A Shure SM57 is going into a Focusrite Scarlett solo USB audio interface, into the PC. Despite this, any audio input device can be used (with- and without an audio interface). 
+
+### Software
+
+AMD Vivado 2025.1 will be used. 
 
 ### Audio Format
 
@@ -35,8 +39,12 @@ Industry records at 24-bit, 44.1 or 48kHz [^2]. The G.711 codec can be considere
 
 The Basys3 has 50 blocks of BRAM (1800Kb total) [^9]. Each block can - among other things - be configured as a `512 x 72` (512 rows of 72 bits) FIFO [^9].
 
-If we use 24 bits. We can have $72/24 = 3$ samples at every row. This can be used to e.g. offset 
+If we use 24 bits. We can have $72/24 = 3$ samples at every row. We can then have $512*50 = 25600$. If we have a sample rate of 44.1kHz, we have a buffer of $25600/44100 = 0.58s$. Typical ranges of reverb is between 0.8 and 4s[^8]. We might have to loop the fifo onto itself. For now we can live with this. If we wanted to utilize the multi line of samples, we could have a setup like
 
+![image](docs/fifo_lines.svg)
+**Figure [^fifo_lines]: Samples can be copied to 3 lines for the fifo block. This can be used e.g. as a delay line, a real line, and a processed line - like shown in the figure.**
+
+The BRAM is initialized as a FIFO in vivado as an IP
 
 
 ## Results
@@ -69,6 +77,17 @@ $$
 ## Discussion
 
 
+## AI Acknowledgements
+
+### fifo_lines
+```
+opus 5.5
+
+make a wavedrom table, that shows an audio sample packets coming in (24 bits if it is relevant). It should be copied into 3 new signals. referencing parts of a fifo (because the fifo is 72 bits). Call it FIFO_1, FIFO_2, FIFO_3. then there should be a break, where you say audio processing happened. then you should indicate that FIFO_1 is delayed a couple of samples from FIFO_2. FIFO_3 has some processed audio.
+
+
+```
+
 ## References
 [^1]: https://digilent.com/reference/basys3/refmanual
 
@@ -79,15 +98,22 @@ $$
 [^4]: https://en.wikipedia.org/wiki/Pulse-code_modulation
 
 [^5]: https://www.analog.com/en/resources/technical-articles/relationship-data-word-size-dynamic-range.html
+<!-- should have more bits when processing. just a float thing tho -->
 
 [^6]: https://en.wikipedia.org/wiki/Audio_bit_depth
 
 [^7]: https://ccrma.stanford.edu/~jos/mdft/Pulse_Code_Modulation_PCM.html
 
-[^8]: https://wiki.sierrahelp.com/index.php/PCM#Integer_Or_Floating_Point
+<!-- []: https://wiki.sierrahelp.com/index.php/PCM#Integer_Or_Floating_Point -->
 
-[^14]: https://nandland.com/lesson-15-what-is-a-block-ram-bram/
+<!-- []: https://nandland.com/lesson-15-what-is-a-block-ram-bram/ -->
 
-[^15]: https://docs.amd.com/v/u/en-US/ug473_7Series_Memory_Resources
+<!-- []: https://docs.amd.com/v/u/en-US/ug473_7Series_Memory_Resources -->
+
+[^8]: https://www.soundbridge.io/reverb-and-delay-tips-for-cleaner-deeper-mixes
 
 [^9]: https://pcbsync.com/artix-7-35t/
+
+[^fifo_lines]: [fifo_lines](#fifo_lines)
+
+

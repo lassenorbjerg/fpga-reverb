@@ -1,0 +1,22 @@
+{ "signal": [
+  //{ "name": "sample_clk", "wave": "p....|....." },
+  { "name": "audio_in[23:0]", "wave": "x2222|2222.",
+    "data": ["s0","s1","s2","s3","s10","s11","s12","s13"] },
+  {},
+  ["FIFO row (72 bit)",
+    { "name": "FIFO_1 [71:48]", "wave": "xx222|2222.", "node": ".........b.",
+      "data": ["s0","s1","s2","s7","s8","s9","s10"] },
+    { "name": "FIFO_2 [47:24]", "wave": "xx222|2222.", "node": ".......a...",
+      "data": ["s0","s1","s2","s9","s10","s11","s12"] },
+    { "name": "FIFO_3 [23:0]",  "wave": "xx222|5555.",
+      "data": ["s0","s1","s2","y9","y10","y11","y12"] }
+  ],
+  {},
+  { "name": "phase", "wave": "3....|4....",
+    "data": ["sample copied into all 3 lanes", "after audio processing"] }
+],
+  "edge": ["a~>b 2-sample delay"],
+  "head": { "text": "24-bit audio samples packed into a 512 x 72 BRAM FIFO" },
+  "foot": { "text": "s = raw sample, y = processed sample" },
+  "config": { "hscale": 2 }
+}
