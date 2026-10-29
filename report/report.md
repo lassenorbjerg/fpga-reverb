@@ -17,7 +17,7 @@ October 2026
 
 ### Hardware
 
-FPGA board is the Basys3 board[^1]. It is part of the artix-7 35t family[^1].
+FPGA board is the Basys3 board[^1]. It is part of the artix-7 35t family[^1][^9].
 
 For completeness. A Shure SM57 is going into a Focusrite Scarlett solo USB audio interface, into the PC. Despite this, any audio input device can be used (with- and without an audio interface). 
 
