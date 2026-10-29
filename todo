@@ -1,4 +1,3 @@
-- [] Read test
-- [] Read write fifo test
-- [] Implement echo from uart lib
+- [] Check artix is written correctly in report
+
 

@@ -37,14 +37,14 @@ The samples are usually signed in two's complement[^7]. We will therefore be usi
 
 Industry records at 24-bit, 44.1 or 48kHz [^2]. The G.711 codec can be considered the lower bound of intelligible audio. It has 8kHz sampling with 8 bits [^3].
 
-The Basys3 has 50 blocks of BRAM (1800Kb total) [^9]. Each block can - among other things - be configured as a `512 x 72` (512 rows of 72 bits) FIFO [^9].
+The Basys3 has 50 blocks of BRAM (1800Kb total) [^9]. Each block can - among other things - be configured as a `512 x 72` (512 rows of 72 bits = 36Kb) FIFO [^9].
 
 If we use 24 bits. We can have $72/24 = 3$ samples at every row. We can then have $512*50 = 25600$. If we have a sample rate of 44.1kHz, we have a buffer of $25600/44100 = 0.58s$. Typical ranges of reverb is between 0.8 and 4s[^8]. We might have to loop the fifo onto itself. For now we can live with this. If we wanted to utilize the multi line of samples, we could have a setup like
 
 ![image](docs/fifo_lines.svg)
 **Figure [^fifo_lines]: Samples can be copied to 3 lines for the fifo block. This can be used e.g. as a delay line, a real line, and a processed line - like shown in the figure.**
 
-The BRAM is initialized as a FIFO in vivado as an IP
+The BRAM is inferred from a FIFO template in Vivado for the artix 7. There is a macro for a dual clock FIFO `FIFO_DUAL_CLOCK_MACRO`. 
 
 
 ## Results
