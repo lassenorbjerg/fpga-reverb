@@ -84,9 +84,16 @@ $$
 opus 5.5
 
 make a wavedrom table, that shows an audio sample packets coming in (24 bits if it is relevant). It should be copied into 3 new signals. referencing parts of a fifo (because the fifo is 72 bits). Call it FIFO_1, FIFO_2, FIFO_3. then there should be a break, where you say audio processing happened. then you should indicate that FIFO_1 is delayed a couple of samples from FIFO_2. FIFO_3 has some processed audio.
-
-
 ```
+
+### FIFO_DUAL_CLOCK_MACRO typing
+```
+haiku 5.5 (selected io without types)
+
+can you infer the types and so on
+```
+created the depth based on the table
+
 
 ## References
 [^1]: https://digilent.com/reference/basys3/refmanual
