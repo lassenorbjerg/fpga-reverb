@@ -17,49 +17,92 @@ The pc with connections to a microphone and a speaker. Sends data through UART.
 The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART.
 ```
 
-# 0.3.2 - Using FIFO to delay input
+# 0.3.2 - Have audio playback delayed
 
-This is building on top of Third iteration.
+The [test setup](#031---test-fifo) can probably be adapted to do this.
 
-## Microarchitecture Design
+Maybe [fifo_lines.svg](report/docs/fifo_lines.svg) can be of inspiration.
 
-Delay FIFO. e.g. 10 clock cycles to see in simulation.
+Kind of have to rethink what it means with delay for a FIFO. Since we probably want an input and output buffer in the real setup as well. Or at least for the processed. But then yes fifo lines might be valid for processed data.
 
-Delay FIFO multiple ms
+# 0.3.1 - Test FIFO
 
-### Modules
+It is a macro. So will need to make testing hardware kinda.
 
-- UART Send module (serialSend)
-- UART Receive module (serialRecv)
-- Memory module (memoryManager)
-  - Receives data from serialRecv
-  - Saves it in BRAM FIFO
-  - Sends it to serialSend after configurable amount of clock cycles
+> [!note] Inspired by a note from Emad Jacob Maroun
+> ![alt text](docs/image.png)
+> 
+> **BB is `bærbar` (laptop). UD is out.**
 
-# 0.3.1 - Creating FIFO in BRAM
+- Split the FPGA into
+  - DSP
+    - Here it would maybe just be a counter to simulate processing
+  - Input buffer
+    - BAUD rate write speed
+    - Clock speed read?
+  - Output buffer
+    - 
+- When the input buffer is full
+  - Advance the clock
+  - DSP reads from input buffer
+- DSP sends processed audio to output buffer
+> I am a bit unsure about this last part
+- When output buffer is full
+  - Send output to laptop through UART
+- Can simply test that input matches output
+  - But predictably delayed
 
-This is building on top of Third iteration.
 
-Create a FIFO using BRAM.
+# 0.3.0 - Create BRAM FIFO
+
+Blackbox FIFO macro has already been setup for the Basys3 Board. Just synthesize it.
+See that BRAM is allocated. It is dual clock. Create ENV object for things like BAUD rate. Create one for the Basys board as well for things like BRAM size.
 
 
-# 0.3.0 - creating BRAM
+# 0.2.0 - Create report and follow goals again*
 
-This is the Third iteration of the design.
+Report has been started. It has given structure and an overview. Can be found at
+[`report/report.md`](report/report.md)
 
-Save a value in BRAM.
-Vivado should say that BRAM is created
 
-# 0.2.0 - controlling volume
+# 0.1.4 - Increasing BAUD rate of port (Left open for later if there is time)
 
-This is the second iteration of the design.
+Baud rate can be changed for a port.
 
-Host sends audio through UART.
+1. Open device manger
+2. Go to ports (COM & LPT)
+3. Right click USB Serial Port
+4. Properties
+5. Port settings
+6. Bits per second
+7. Set to 921600
 
-Device also have switches as input.
-Device sends audio back scaled by switches through UART.
+```
+python .\scripts\serial_send.py COM4 -b 921600 --recv play
+```
 
-# 0.1.3* - Registering FPGA as a usb device 
+## Debugging the UART
+
+`scripts/uart_debug.py` checks the link itself rather than the audio going
+over it. It defaults to the baud rate it reads back out of `EchoDemo.v`, so it
+cannot silently test at the wrong rate.
+
+```
+python scripts/uart_debug.py --mode check          # framing maths, no board needed
+python scripts/uart_debug.py COM4                  # echo test + diagnosis
+python scripts/uart_debug.py COM4 --mode sweep     # which baud is the bitstream using?
+python scripts/uart_debug.py COM4 --mode framing   # stop-bit / parity mismatch
+python scripts/uart_debug.py COM4 --mode monitor --seconds 5 --send
+python scripts/uart_debug.py COM4 --mode monitor --hold    # record while SPACE is held
+python scripts/uart_debug.py --loop                # exercise the script, no board
+```
+
+At 100 MHz and 921600 baud the divider lands on 109 cycles per bit, so the
+FPGA actually runs at 917,431 baud (-0.45%). That costs 4.3% of a bit cell by
+the stop bit, against a 50% budget -- fine, but it is the first thing to check
+when bytes start arriving corrupted in their high bits.
+
+# 0.1.3* - ~~Registering FPGA as a usb device ~~ CANCELLED
 
 https://github.com/WangXuan95/FPGA-USB-Device
 
@@ -225,7 +268,8 @@ fpga-reverb/
 │   ├── requirements.txt
 │   ├── serial_file.py
 │   ├── serial_recv.py
-│   └── serial_send.py
+│   ├── serial_send.py
+│   └── uart_debug.py
 ├── src/
 │   ├── main/
 │   │   └── scala/
@@ -320,6 +364,7 @@ If red bar saying `No Target`: Press on it.
   2. `Metals: Import build`
   3. Close VS Code, delete `.bloop`, `.bsp`, `.metals`, `target` and `project/target`, reopen, then **Import build**.
 
+> [!note] Intellisense only works in Metals when it can be compiled. i.e. does `sbt run` work.
 
 
 ## Running Tests
@@ -419,3 +464,107 @@ python scripts/serial_send.py COM4 -b <baud> --recv hex    # send mic, print the
 python scripts/serial_recv.py COM4 -m hex                  # receive only
 python scripts/serial_send.py --no-serial --recv play      # no board: loops your mic back to the speakers
 ```
+
+___
+
+# Predefined goals
+
+## week 1/2
+### Research
+#### Research audio formats
+- sample rate
+- bit depth
+- sample data type (how to handle floats)
+- Standards
+    - What data is needed?
+#### Understand how the BRAM works on the board
+- How is bram different?
+- Is it just flip-flops?
+- is it volatile?
+- Note how big for basys3
+- How do you write to it?
+    - Is it a vivado config?
+    - xdc?
+- What happens if it gets filled?
+- Are there addresses?
+    - Are they linear?
+        - Guess it is still <ins>RA</ins>M lol
+- Does it support instructions?
+
+> It supports FIFO config <3<3<3
+
+#### Calculate the max length of samples that can be saved in BRAM, given sample rate and bit depth 
+- Find upper bound (no headers just raw audio)
+- What should be saved in BRAM?
+- Can we take shortcuts
+    - Every other sample, etc.
+
+
+## week 3
+### Sending/Receiving audio
+
+#### Determine appropriate protocol for sending Audio serially
+- UART
+- Headers
+- Allowed configurability
+    - Support only one format?
+
+#### Script for sending audio serially
+- Existing libraries?
+- Should be able to choose where it sends the data
+    - Useful for testing, can be sent to an internal bus, that can be listened to
+
+## week 4
+#### Set up Testbench
+- Contained deterministic tests
+- 
+#### Set up Simulator
+- Send/receive data from pc
+- 
+## week 5
+### Playing Audio
+
+#### Input audio from file into the FPGA and hear undistorted playback (based on which is easier, microphone input might be done before supporting file input)
+- Should it be same protocol sending it back?
+
+## week 6
+### Modifying audio
+#### Change volume based on switch input 
+- 
+
+
+
+#### Create a buffer using the BRAM
+- FIFO?
+    - Dynamic?
+- 
+## week 7
+#### Create a very simple delay - output the buffer after x amount of time
+- 
+## week 8
+
+#### Create a comb filter - output the input along with the delayed buffer
+- 
+## week 9
+#### Create a "stuttering" effect - cut playback every x amount of time
+- 
+
+#### Input real-time audio from microphone into the FPGA and hear undistorted playback 
+- 
+## week 10
+#### Understand digital all-pass filters 
+- 
+## week 11
+#### Make an all-pass filter
+- 
+## week 12
+#### Make a Schroeder reverb
+- 
+
+#### Look into other types of reverb and see how feasible they would be
+- 
+## week 13
+#### Experiment and try to make own audio effect
+- 
+
+
