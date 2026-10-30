@@ -1,4 +1,4 @@
-package reverb
+package utils
 
 import chisel3._
 import chisel3.util._
@@ -24,21 +24,29 @@ class FIFO_DUAL_CLOCK_MACRO(
   private val countWidth = log2Ceil(depth)
 
   val io = IO(new Bundle {
-    val ALMOSTEMPTY = Output(Bool())               // 1-bit output almost empty               
-    val ALMOSTFULL  = Output(Bool())               // 1-bit output almost full               
-    val DO          = Output(UInt(DATA_WIDTH.W))   // Output data, width defined by DATA_WIDTH parameter                           
-    val EMPTY       = Output(Bool())               // 1-bit output empty               
-    val FULL        = Output(Bool())               // 1-bit output full               
-    val RDCOUNT     = Output(UInt(countWidth.W))   // Output read count, width determined by FIFO depth                           
-    val RDERR       = Output(Bool())               // 1-bit output read error               
-    val WRCOUNT     = Output(UInt(countWidth.W))   // Output write count, width determined by FIFO depth                           
-    val WRERR       = Output(Bool())               // 1-bit output write error               
-    val DI          = Input(UInt(DATA_WIDTH.W))    // Input data, width defined by DATA_WIDTH parameter                         
-    val RDCLK       = Input(Clock())               // 1-bit input read clock               
-    val RDEN        = Input(Bool())                // 1-bit input read enable             
-    val RST         = Input(Bool())                // 1-bit input reset             
-    val WRCLK       = Input(Clock())               // 1-bit input write clock               
-    val WREN        = Input(Bool())                // 1-bit input write enable             
+    val ALMOSTEMPTY = Output(Bool()) // 1-bit output almost empty
+    val ALMOSTFULL = Output(Bool()) // 1-bit output almost full
+    val DO = Output(
+      UInt(DATA_WIDTH.W)
+    ) // Output data, width defined by DATA_WIDTH parameter
+    val EMPTY = Output(Bool()) // 1-bit output empty
+    val FULL = Output(Bool()) // 1-bit output full
+    val RDCOUNT = Output(
+      UInt(countWidth.W)
+    ) // Output read count, width determined by FIFO depth
+    val RDERR = Output(Bool()) // 1-bit output read error
+    val WRCOUNT = Output(
+      UInt(countWidth.W)
+    ) // Output write count, width determined by FIFO depth
+    val WRERR = Output(Bool()) // 1-bit output write error
+    val DI = Input(
+      UInt(DATA_WIDTH.W)
+    ) // Input data, width defined by DATA_WIDTH parameter
+    val RDCLK = Input(Clock()) // 1-bit input read clock
+    val RDEN = Input(Bool()) // 1-bit input read enable
+    val RST = Input(Bool()) // 1-bit input reset
+    val WRCLK = Input(Clock()) // 1-bit input write clock
+    val WREN = Input(Bool()) // 1-bit input write enable
 
   })
   require(
@@ -115,3 +123,7 @@ class FIFO_DUAL_CLOCK_MACRO(
 }
 
 class Artix7Wrapper extends Module {}
+
+object Artix7Wrapper extends App {
+  VerilogGen(new Artix7Wrapper, "BRAM_FIFO.sv")
+}

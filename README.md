@@ -25,41 +25,13 @@ Maybe [fifo_lines.svg](report/docs/fifo_lines.svg) can be of inspiration.
 
 Kind of have to rethink what it means with delay for a FIFO. Since we probably want an input and output buffer in the real setup as well. Or at least for the processed. But then yes fifo lines might be valid for processed data.
 
-# 0.3.1 - Test FIFO
-
-It is a macro. So will need to make testing hardware kinda.
-
-> [!note] Inspired by a note from Emad Jacob Maroun
-> ![alt text](docs/image.png)
-> 
-> **BB is `bærbar` (laptop). UD is out.**
-
-- Split the FPGA into
-  - DSP
-    - Here it would maybe just be a counter to simulate processing
-  - Input buffer
-    - BAUD rate write speed
-    - Clock speed read?
-  - Output buffer
-    - 
-- When the input buffer is full
-  - Advance the clock
-  - DSP reads from input buffer
-- DSP sends processed audio to output buffer
-> I am a bit unsure about this last part
-- When output buffer is full
-  - Send output to laptop through UART
-- Can simply test that input matches output
-  - But predictably delayed
 
 
-# 0.3.0 - Create BRAM FIFO
-
-Blackbox FIFO macro has already been setup for the Basys3 Board. Just synthesize it.
-See that BRAM is allocated. It is dual clock. Create ENV object for things like BAUD rate. Create one for the Basys board as well for things like BRAM size.
+# 0.3.0 - Create Delay*
 
 
-# 0.2.0 - Create report and follow goals again*
+
+# 0.2.0 - Create report and follow goals again
 
 Report has been started. It has given structure and an overview. Can be found at
 [`report/report.md`](report/report.md)
@@ -317,7 +289,33 @@ Vivado will be used.
 
 
 
+# Backlog
 
+
+## Test Setup
+
+> [!note] Inspired by a note from Emad Jacob Maroun
+> ![alt text](docs/image.png)
+> 
+> **BB is `bærbar` (laptop). UD is out.**
+
+- Split the FPGA into
+  - DSP
+    - Here it would maybe just be a counter to simulate processing
+  - Input buffer
+    - BAUD rate write speed
+    - Clock speed read?
+  - Output buffer
+    - 
+- When the input buffer is full
+  - Advance the clock
+  - DSP reads from input buffer
+- DSP sends processed audio to output buffer
+> I am a bit unsure about this last part
+- When output buffer is full
+  - Send output to laptop through UART
+- Can simply test that input matches output
+  - But predictably delayed
 
 
 

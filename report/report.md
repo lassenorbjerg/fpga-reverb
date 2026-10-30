@@ -43,12 +43,10 @@ The Basys3 has 50 blocks of BRAM (1800Kb total) [^9]. Each block can - among oth
 
 If we use 24 bits. We can have $72/24 = 3$ samples at every row. We can then have $512*50 = 25600$. If we have a sample rate of 44.1kHz, we have a buffer of $25600/44100 = 0.58s$. Typical ranges of reverb is between 0.8 and 4s[^8]. We might have to loop the fifo onto itself. For now we can live with this. If we wanted to utilize the multi line of samples, we could have a setup like
 
-<!-- Look at the template macro and try different configs to see if it still holds. Seems like you can just do w/e you want-->
-
 ![image](docs/fifo_lines.svg)
 **Figure [^fifo_lines]: Samples can be copied to 3 lines for the fifo block. This can be used e.g. as a delay line, a real line, and a processed line - like shown in the figure.**
 
-The BRAM is inferred from a FIFO template in Vivado for the artix 7. There is a macro for a dual clock FIFO `FIFO_DUAL_CLOCK_MACRO`. 
+This will be abstracted away by letting Chisel and Vivado infer what is meant through Chisel's .
 
 
 ## Results
