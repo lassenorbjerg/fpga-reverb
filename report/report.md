@@ -2,7 +2,7 @@
 
 Lasse Nørbjerg s253860
 
-October 2026
+December 2026
 
 
 ## Introduction
@@ -13,17 +13,19 @@ October 2026
 
 ### Setup
 
-![image](docs/setup.svg)
+<img src="docs/setup.svg" alt="setup" width="400"/>
+
+**Figure [^setup]: 1: Audio goes into microphone. 2: Microphone sends audio to PC. 3: PC sends audio data as PCM through UART to FPGA. 4: FPGA processes audio data. 5: FPGA sends processed audio back through UART. 6: PC plays the processed audio back to the user.**
 
 ### Hardware
 
-FPGA board is the Basys3 board[^1]. It is part of the artix-7 35t family[^1][^9].
+FPGA board is the Basys3 board[^1]. It is part of the Artix-7 35t family[^1][^9].
 
 For completeness. A Shure SM57 is going into a Focusrite Scarlett solo USB audio interface, into the PC. Despite this, any audio input device can be used (with- and without an audio interface). 
 
 ### Software
 
-AMD Vivado 2025.1 will be used. 
+AMD Vivado 2025.1 will be used for synthesizing [^11]. The hardware will be described using Chisel [^12].
 
 ### Audio Format
 
@@ -37,9 +39,11 @@ The samples are usually signed in two's complement[^7]. We will therefore be usi
 
 Industry records at 24-bit, 44.1 or 48kHz [^2]. The G.711 codec can be considered the lower bound of intelligible audio. It has 8kHz sampling with 8 bits [^3].
 
-The Basys3 has 50 blocks of BRAM (1800Kb total) [^9]. Each block can - among other things - be configured as a `512 x 72` (512 rows of 72 bits = 36Kb) FIFO [^9].
+The Basys3 has 50 blocks of BRAM (1800Kb total) [^9]. Each block can - among other non-FIFO things - be configured as a `512 x 72` (512 rows of 72 bits = 36Kb) FIFO [^9].
 
 If we use 24 bits. We can have $72/24 = 3$ samples at every row. We can then have $512*50 = 25600$. If we have a sample rate of 44.1kHz, we have a buffer of $25600/44100 = 0.58s$. Typical ranges of reverb is between 0.8 and 4s[^8]. We might have to loop the fifo onto itself. For now we can live with this. If we wanted to utilize the multi line of samples, we could have a setup like
+
+<!-- Look at the template macro and try different configs to see if it still holds. Seems like you can just do w/e you want-->
 
 ![image](docs/fifo_lines.svg)
 **Figure [^fifo_lines]: Samples can be copied to 3 lines for the fifo block. This can be used e.g. as a delay line, a real line, and a processed line - like shown in the figure.**
@@ -123,4 +127,9 @@ created the depth based on the table
 
 [^fifo_lines]: [fifo_lines](#fifo_lines)
 
+[^setup]: [docs/setup.svg](docs/setup.svg)
 
+
+[^11]: https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado/vivado-whats-new.html#tabs-de9b056824-item-12e22c06e7-tab
+
+[^12]: https://www.chisel-lang.org/
