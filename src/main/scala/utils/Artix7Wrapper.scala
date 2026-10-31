@@ -123,7 +123,3 @@ class FIFO_DUAL_CLOCK_MACRO(
 }
 
 class Artix7Wrapper extends Module {}
-
-object Artix7Wrapper extends App {
-  VerilogGen(new Artix7Wrapper, "BRAM_FIFO.sv")
-}
