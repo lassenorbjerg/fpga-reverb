@@ -1,6 +1,9 @@
+package serial
+
 import chisel3._
 import chisel3.util._
 import chisel.lib.uart._
+import utils.Env
 
 /** This is the top level to for the UART output and a test blinking LED.
   */
@@ -21,5 +24,5 @@ class EchoDemo(frequ: Int, baud: Int = 115200) extends Module {
 
 // generate Verilog
 object EchoDemo extends App {
-  emitVerilog(new EchoDemo(100000000,921_600))
+  emitVerilog(new EchoDemo(100000000,Env.BaudRate))
 }
