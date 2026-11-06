@@ -41,6 +41,20 @@ class SamplesToBytes(p: AudioParams) extends Module {
   val in = IO(Flipped(Decoupled(p.sample)))  // The consumed sample
   val out = IO(Decoupled(UInt(8.W)))         // The produced byte
 
-  
+  val shift = RegInit(0.U(p.sampleWidth.W))  // pump out sample one byte shifted at a time
+  val counter = RegInit(0.U(log2Ceil(p.bytesPerSample + 1).W))
+  val empty = counter === 0.U
+
+  in.ready := empty  // we can receive another sample since we have sent all bytes out
+  out.valid := !empty  // we still have bytes left to send
+  out.bits := shift(7,0)  // inclusive 7th bit downto 0th = the smallest byte
+
+  when(in.fire) {
+    shift := in.bits.asUInt
+    counter := p.bytesPerSample.U
+  } .elsewhen(out.fire) {
+    shift := shift >> 8  // out has received lowest byte. We shift the next byte in.
+    counter := counter - 1.U  // one less byte to send
+  }
 
 }
