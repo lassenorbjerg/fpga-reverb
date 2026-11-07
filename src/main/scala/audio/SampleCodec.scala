@@ -56,5 +56,4 @@ class SamplesToBytes(p: AudioParams) extends Module {
     shift := shift >> 8  // out has received lowest byte. We shift the next byte in.
     counter := counter - 1.U  // one less byte to send
   }
-
 }

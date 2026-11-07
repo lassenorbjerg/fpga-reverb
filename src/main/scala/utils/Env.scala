@@ -5,4 +5,5 @@ object Env {
     val delayDepth = 4  // How many samples each delay line can hold
 
     val BaudRate = 921_600
+    val sampleRate = 48_000  // Hz
 }

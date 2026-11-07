@@ -15,7 +15,8 @@ import utils.Env
   */
 case class AudioParams(
     val sampleWidth: Int = Env.sampleWidth,
-    val delayDepth: Int = Env.delayDepth
+    val delayDepth: Int = Env.delayDepth,
+    val sampleRate: Int = Env.sampleRate
 ) {
   require(sampleWidth > 0, "Sample width must be positive")
   require(delayDepth > 0, "Delay depth must be positive")
