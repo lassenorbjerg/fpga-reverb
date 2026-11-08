@@ -29,7 +29,7 @@ Kind of have to rethink what it means with delay for a FIFO. Since we probably w
 
 # 0.3.0 - Create Delay*
 
-Works but it is delayed by default
+Works but it is delayed unintentionally
 
 ```
 python scripts/serial_send.py COM4 --baud 921600 --recv play -r 44100
