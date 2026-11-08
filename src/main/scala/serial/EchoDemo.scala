@@ -21,8 +21,3 @@ class EchoDemo(frequ: Int, baud: Int = 115200) extends Module {
 
   // For testing
 }
-
-// generate Verilog
-object EchoDemo extends App {
-  emitVerilog(new EchoDemo(100000000,Env.BaudRate))
-}
