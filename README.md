@@ -29,6 +29,11 @@ Kind of have to rethink what it means with delay for a FIFO. Since we probably w
 
 # 0.3.0 - Create Delay*
 
+Works but it is delayed by default
+
+```
+python scripts/serial_send.py COM4 --baud 921600 --recv play -r 44100
+```
 
 
 # 0.2.0 - Create report and follow goals again
