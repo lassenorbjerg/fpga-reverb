@@ -238,39 +238,41 @@ end // initial
 `endif // SYNTHESIS
 endmodule
 module BytesToSample(
-  input        clock,
-  input        reset,
-  output       in_ready, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 15:14]
-  input        in_valid, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 15:14]
-  input  [7:0] in_bits, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 15:14]
-  input        out_ready, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 16:15]
-  output       out_valid, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 16:15]
-  output [7:0] out_bits // @[\\src\\main\\scala\\audio\\SampleCodec.scala 16:15]
+  input         clock,
+  input         reset,
+  output        in_ready, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 15:14]
+  input         in_valid, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 15:14]
+  input  [7:0]  in_bits, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 15:14]
+  input         out_ready, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 16:15]
+  output        out_valid, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 16:15]
+  output [15:0] out_bits // @[\\src\\main\\scala\\audio\\SampleCodec.scala 16:15]
 );
 `ifdef RANDOMIZE_REG_INIT
   reg [31:0] _RAND_0;
   reg [31:0] _RAND_1;
 `endif // RANDOMIZE_REG_INIT
-  reg [7:0] shift; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 18:22]
-  reg  byteCounter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 19:28]
+  reg [15:0] shift; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 18:22]
+  reg [1:0] byteCounter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 19:28]
+  wire  full = byteCounter == 2'h2; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 20:26]
   wire  _T = in_ready & in_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
-  wire [15:0] _shift_T = {in_bits,shift}; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 27:17]
+  wire [23:0] _shift_T = {in_bits,shift}; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 27:17]
+  wire [1:0] _byteCounter_T_1 = byteCounter + 2'h1; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 28:32]
   wire  _T_1 = out_ready & out_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
-  assign in_ready = ~byteCounter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 22:15]
-  assign out_valid = byteCounter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 20:26]
+  assign in_ready = ~full; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 22:15]
+  assign out_valid = byteCounter == 2'h2; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 20:26]
   assign out_bits = shift; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 24:21]
   always @(posedge clock) begin
     if (reset) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 18:22]
-      shift <= 8'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 18:22]
+      shift <= 16'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 18:22]
     end else if (_T) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 26:18]
-      shift <= _shift_T[15:8]; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 27:11]
+      shift <= _shift_T[23:8]; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 27:11]
     end
     if (reset) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 19:28]
-      byteCounter <= 1'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 19:28]
+      byteCounter <= 2'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 19:28]
     end else if (_T) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 26:18]
-      byteCounter <= byteCounter + 1'h1; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 28:17]
+      byteCounter <= _byteCounter_T_1; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 28:17]
     end else if (_T_1) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 29:25]
-      byteCounter <= 1'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 30:17]
+      byteCounter <= 2'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 30:17]
     end
   end
 // Register and memory initialization
@@ -310,9 +312,9 @@ initial begin
     `endif
 `ifdef RANDOMIZE_REG_INIT
   _RAND_0 = {1{`RANDOM}};
-  shift = _RAND_0[7:0];
+  shift = _RAND_0[15:0];
   _RAND_1 = {1{`RANDOM}};
-  byteCounter = _RAND_1[0:0];
+  byteCounter = _RAND_1[1:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -322,41 +324,42 @@ end // initial
 `endif // SYNTHESIS
 endmodule
 module SamplesToBytes(
-  input        clock,
-  input        reset,
-  output       in_ready, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 41:14]
-  input        in_valid, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 41:14]
-  input  [7:0] in_bits, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 41:14]
-  input        out_ready, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 42:15]
-  output       out_valid, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 42:15]
-  output [7:0] out_bits // @[\\src\\main\\scala\\audio\\SampleCodec.scala 42:15]
+  input         clock,
+  input         reset,
+  output        in_ready, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 41:14]
+  input         in_valid, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 41:14]
+  input  [15:0] in_bits, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 41:14]
+  input         out_ready, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 42:15]
+  output        out_valid, // @[\\src\\main\\scala\\audio\\SampleCodec.scala 42:15]
+  output [7:0]  out_bits // @[\\src\\main\\scala\\audio\\SampleCodec.scala 42:15]
 );
 `ifdef RANDOMIZE_REG_INIT
   reg [31:0] _RAND_0;
   reg [31:0] _RAND_1;
 `endif // RANDOMIZE_REG_INIT
-  reg [7:0] shift; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 44:22]
-  reg  counter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 45:24]
-  wire  empty = ~counter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 46:23]
+  reg [15:0] shift; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 44:22]
+  reg [1:0] counter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 45:24]
+  wire  empty = counter == 2'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 46:23]
   wire  _T = in_ready & in_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
   wire  _T_1 = out_ready & out_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
-  wire  _GEN_1 = _T_1 ? counter - 1'h1 : counter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 55:25 57:13 45:24]
-  wire  _GEN_3 = _T | _GEN_1; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 52:17 54:13]
-  assign in_ready = ~counter; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 46:23]
+  wire [1:0] _counter_T_1 = counter - 2'h1; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 57:24]
+  assign in_ready = counter == 2'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 46:23]
   assign out_valid = ~empty; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 49:16]
-  assign out_bits = shift; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 50:20]
+  assign out_bits = shift[7:0]; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 50:20]
   always @(posedge clock) begin
     if (reset) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 44:22]
-      shift <= 8'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 44:22]
+      shift <= 16'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 44:22]
     end else if (_T) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 52:17]
       shift <= in_bits; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 53:11]
     end else if (_T_1) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 55:25]
-      shift <= 8'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 56:11]
+      shift <= {{8'd0}, shift[15:8]}; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 56:11]
     end
     if (reset) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 45:24]
-      counter <= 1'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 45:24]
-    end else begin
-      counter <= _GEN_3;
+      counter <= 2'h0; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 45:24]
+    end else if (_T) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 52:17]
+      counter <= 2'h2; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 54:13]
+    end else if (_T_1) begin // @[\\src\\main\\scala\\audio\\SampleCodec.scala 55:25]
+      counter <= _counter_T_1; // @[\\src\\main\\scala\\audio\\SampleCodec.scala 57:13]
     end
   end
 // Register and memory initialization
@@ -396,9 +399,9 @@ initial begin
     `endif
 `ifdef RANDOMIZE_REG_INIT
   _RAND_0 = {1{`RANDOM}};
-  shift = _RAND_0[7:0];
+  shift = _RAND_0[15:0];
   _RAND_1 = {1{`RANDOM}};
-  counter = _RAND_1[0:0];
+  counter = _RAND_1[1:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -424,12 +427,12 @@ module AudioCore(
   wire [7:0] toSamples_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
   wire  toSamples_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
   wire  toSamples_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire [7:0] toSamples_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
+  wire [15:0] toSamples_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
   wire  toBytes_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
   wire  toBytes_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
   wire  toBytes_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
   wire  toBytes_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
-  wire [7:0] toBytes_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
+  wire [15:0] toBytes_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
   wire  toBytes_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
   wire  toBytes_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
   wire [7:0] toBytes_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
