@@ -20,8 +20,9 @@ class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
   val toSamples = Module(new BytesToSample(p))
   val toBytes = Module(new SamplesToBytes(p))
 
+  toSamples.in <> Queue(io.rx, 16)
+
   // Should just echo out the input
-  toSamples.in <> io.rx
   toBytes.in <> toSamples.out
   toBytes.out <> io.tx
 }

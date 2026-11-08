@@ -5,6 +5,7 @@ import chisel.lib.uart._
 import chisel3._
 import chisel3.util._
 import utils._
+import serial.UartTx
 
 /** Reads UART bits and links it to AudioCore as bytes
   */
@@ -24,7 +25,7 @@ class Top(audioParams: AudioParams) extends Module {
   rx.io.rxd := io.rxd
 
   val tx = Module(
-    new Tx(
+    new UartTx(
       frequency = Board.clockFreq,
       baudRate = Env.BaudRate
     )
@@ -34,7 +35,7 @@ class Top(audioParams: AudioParams) extends Module {
   val core = Module(new AudioCore(p = audioParams))
   core.io.sw := io.sw
 
-  core.io.rx :<>= rx.io.channel // consumer :<>= producer
+  core.io.rx <> Queue(rx.io.channel, 64) // consumer :<>= producer
   tx.io.channel :<>= core.io.tx // consumer :<>= producer
 }
 

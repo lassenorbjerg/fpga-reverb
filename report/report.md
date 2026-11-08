@@ -76,6 +76,25 @@ $$
 15 seconds is more than plenty for simple echoes. This shows that Buffer size is not a blocker.
 
 
+### Making it real-time
+
+#### Baud rate needs much higher
+#### Tx 2 stop bits reducing throughput
+
+
+
+### Making the gain
+### Making the delay
+### Making the stutter
+### Making the comb filter
+### Making the all-pass filter
+### Making the Schroeder Reverb
+
+
+
+
+
+
 ## Discussion
 
 
