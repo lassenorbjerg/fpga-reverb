@@ -140,6 +140,8 @@ AudioParams holds the sample width and buffer depth, so changing the bit depth i
 
 ### How to Write Report and README
 
+Full response can be found at https://github.com/lassenorbjerg/fpga-reverb/blob/8eddd3cf42ab67c650e76f2ee1c1fcf9d2181350/docs/archive/How%20to%20Write%20Report%20and%20README.md
+
 ```sh
 > cat ~/.claude/CLAUDE.md                         
 Be a sparring partner: short answers, show code in chat, don't edit files unless I ask.

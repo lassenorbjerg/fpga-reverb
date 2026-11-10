@@ -1,5 +1,29 @@
 # FPGA Reverb
-<intro paragraph + setup.svg>
+
+This project explores real-time audio effects implemented in chisel synthesized the FPGA board Basys3. It has a focus on getting microphone input and adding reverb to it for a real-time "reverbed" playback.
+
+This project is part of a 5 ECTS special course during my MSc in Computer Engineering at DTU. The learning [goals](docs/goals.md) of this project are primarily:
+- Writing a real world application in chisel
+  - Exploring how much should be written from the bottom up
+- Learning about audio processing
+  - Both in raw format and modifying it for musical applications
+- Theory of Audio Effects
+  - Creating a chisel framework such that audio effect ideas can just be created and integrated standalone
+- Scheduling my own project in preparation for managerial tasks of the thesis
+
+## Setup
+The working setup is
+
+```
+1 mic -> 2 PC -> Python script -> UART -> 3 FPGA -> 4 Effects -> UART -> 5 PC -> 6 Speakers
+```
+
+<img src="report/docs/setup.svg" alt="setup" width="400"/>
+
+The baud rate used is `921600` and sample rate of `44.1kHz`. 
+
+> [!note] The baud rate is not default for UART.
+> See section [Set baud rate (Windows)](#set-baud-rate-windows)
 
 ## Status
 | Feature | Branch/tag | Verilog | XDC | Works |
@@ -12,11 +36,23 @@
 - Hardware: Basys3, micro-USB cable, microphone (+ optional audio interface), headphones
 - Software: JDK 21, sbt, Vivado 2025.1, Python ≥3.10
 - Chisel toolchain: https://github.com/schoeberl/chisel-lab/blob/master/Setup.md
-  (Windows gotchas, sbt path without spaces, Metals: see docs/setup.md)
+  (Windows gotchas, sbt path without spaces, Metals: see [docs/setup.md](docs/setup.md))
 
 ## Build the hardware
+
+First check that test passes
+```sh
 sbt test
-sbt "runMain top.Top"        # -> generated/<feature>.v
+```
+
+Generate verilog to `generated/<feature>.v`
+```sh
+sbt "runMain top.Top"
+```
+Alternatively since only one main
+```sh
+sbt run
+```
 
 ## Program the FPGA (Vivado)
 1. New RTL project, part xc7a35tcpg236-1
