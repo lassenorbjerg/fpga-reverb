@@ -58,6 +58,10 @@ Baud rate can be changed for a port.
 python .\scripts\serial_send.py COM4 -b 921600 --recv play
 ```
 
+> [!warning] Some machines do not allow a baud rate of 921600.
+> The bit depth and sample rate can be lowered instead (`sampleWidth` and `sampleRate` in
+> [`Env.scala`](src/main/scala/utils/Env.scala)), but the audio is then noticeably less clear.
+
 ## Debugging the UART
 
 `scripts/uart_debug.py` checks the link itself rather than the audio going
