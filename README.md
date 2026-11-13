@@ -55,29 +55,51 @@ sbt run
 ```
 
 ## Program the FPGA (Vivado)
-1. New RTL project, part xc7a35tcpg236-1
+1. New RTL project with Basys-3 as the Board.
 2. Add generated/<feature>.v as source + xdc/<feature>.xdc as constraint
-3. Generate bitstream → Hardware Manager → Program
+3. Generate bitstream -> Hardware Manager -> Program
 > Naming: every major feature has its own generated/<feature>.v and a matching
 > xdc/<feature>.xdc with the same base name. xdc/Basys3_Master.xdc is the untouched Digilent template.
 
 ## Host setup
 ### Python env
+#### Windows
+```powershell
 cd scripts; python -m venv .venv; .\.venv\Scripts\activate.ps1; pip install -r requirements.txt
+```
+#### Unix
+```sh
+cd scripts; python -m venv .venv; source .venv/bin/activate; pip install -r requirements.txt
+```
+
 ### Find the COM port
+```sh
 python -m serial.tools.list_ports
+```
+
+> [!note] COM4 will be used in examples
+
 ### Set baud rate (Windows)
-Device Manager → Ports (COM & LPT) → USB Serial Port → Properties → Port Settings → 921600
-> Must match Env.BaudRate in src/main/scala/utils/Env.scala
+```
+Device Manager -> Ports (COM & LPT) -> USB Serial Port -> Properties -> Port Settings -> 921600
+```
+> [!note] Must match Env.BaudRate in src/main/scala/utils/Env.scala
+
+> [!note] Older usb ports do not support this high of a Baud Rate
 ### Audio
 Pick the mic/interface as Windows default input. Use headphones (feedback).
 
 ## Run
+```sh
 python scripts/serial_send.py COM4 -b 921600 -r 44100 --recv play   # live mic through FPGA
 python scripts/serial_send.py --no-serial --recv play                # no board, loopback
 python scripts/serial_file.py COM4 audio.wav                         # file round trip
 python scripts/uart_debug.py COM4                                    # link diagnosis
+```
 
 ## Repository layout → docs/files.md
 ## Report → report/report.md
 ## License
+
+
+

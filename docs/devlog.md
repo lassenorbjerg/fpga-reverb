@@ -4,6 +4,14 @@ Iteration notes from 0.1.0 onward. Raw material for the report (see [report/repo
 
 ## Glossary
 
+|  Term     | Alias      | Definition      |
+|  ---  |  ---  |  ---  |
+|       |       |       |
+|       |       |       |
+|       |       |       |
+
+
+
 - Host
 ```
 The pc with connections to a microphone and a speaker. Sends data through UART.
@@ -13,19 +21,31 @@ The pc with connections to a microphone and a speaker. Sends data through UART.
 The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART.
 ```
 
-# 0.3.2 - Have audio playback delayed
+# 0.3.2 - Create intentional Delay
 
-The [test setup](#test-setup) can probably be adapted to do this.
-
-Maybe [fifo_lines.svg](../report/docs/fifo_lines.svg) can be of inspiration.
-
-Kind of have to rethink what it means with delay for a FIFO. Since we probably want an input and output buffer in the real setup as well. Or at least for the processed. But then yes fifo lines might be valid for processed data.
-
-
+# 0.3.1 - Remove Delay
 
 # 0.3.0 - Create Delay*
 
+In a way we did create the delay. Although unintentional.
 
+Everything was rewritten. Now we have some structure again.
+
+- Created different packages
+  - audio
+    - The effects and sample handling
+  - serial
+    - UART
+  - top
+    - Putting all the things together
+    - The top of tops is called `Top`
+  - utils
+    - Env variables for whole project
+    - Other util functionality
+- Created test for sample conversion
+- Setup testing utils
+- Restructured README to only contain relevant information
+- Began restructuring report
 
 # 0.2.0 - Create report and follow goals again
 
