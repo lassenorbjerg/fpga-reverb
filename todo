@@ -1,8 +1,10 @@
 - [] Use new structure for report
+  - Report not required anymore
 - [] Fix long delay for playback
 - [] Write files.md for scripts
 - [] Write files.md for report
 - [] Write files.md for docs
+- [] devlog 0.3.0 envelop calcs
 
 ## Continuous
 - [] Update readme status

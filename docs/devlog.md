@@ -43,12 +43,24 @@ Everything was rewritten. Now we have some structure again.
 ![alt text](docs/image-1.png)
 
 ## Envelope delay calcs
-$$Baud = 10^6 b/s$$
+$$Baud = 921_600 \approx 10^6 b/s$$
 $$clock = 100*10^6 Hz$$
-We therefore have 100 cycles if we sent each bit out again as it came in.
+$$SampleRate = 48_000 Hz$$
+clock freq is 100 times the baud
+
+
+Let's work backwards in terms of the contract with output.
+tx sends out at 1/100 of clock rate. We therefore essentially send a bit every 100 cycles.
+- The bits we send represent a byte (8N1=10bits)
+- The byte represents a 16-bit sample (2 bytes)
+- We need a sample 48000 times per second
+- Which means we need send out `48000*2=96000` bytes per second
+- So `96000*10=960000` bits per second
+
+
 
 We need to get the rx bits to a Byte
-- 
+-  
 
 # 0.2.0 - Create report and follow goals again
 
