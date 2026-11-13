@@ -31,6 +31,9 @@ object Env {
   val sampleWidth: Int = 16 // bits per PCM sample
   val delayDepth: Int = 4 // How many samples each delay line can hold
 
-  val BaudRate: Int = 921_600
+  val rxQueueDepth: Int = 32
+  val txQueueDepth: Int = 16
+
+  val BaudRate: Int = 921_600  // bits/s
   val sampleRate: Int = 48_000 // Hz
 }

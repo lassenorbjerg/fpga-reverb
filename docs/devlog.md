@@ -39,6 +39,17 @@ Everything was rewritten. Now we have some structure again.
 - Restructured README to only contain relevant information
 - Began restructuring report
 
+![alt text](docs/image.png)
+![alt text](docs/image-1.png)
+
+## Envelope delay calcs
+$$Baud = 10^6 b/s$$
+$$clock = 100*10^6 Hz$$
+We therefore have 100 cycles if we sent each bit out again as it came in.
+
+We need to get the rx bits to a Byte
+- 
+
 # 0.2.0 - Create report and follow goals again
 
 Report has been started. It has given structure and an overview. Can be found at

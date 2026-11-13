@@ -35,7 +35,7 @@ class Top(audioParams: AudioParams) extends Module {
   val core = Module(new AudioCore(p = audioParams))
   core.io.sw := io.sw
 
-  core.io.rx <> Queue(rx.io.channel, 64) // consumer :<>= producer
+  core.io.rx <> Queue(rx.io.channel, Env.rxQueueDepth) // consumer :<>= producer
   tx.io.channel :<>= core.io.tx // consumer :<>= producer
 }
 
@@ -43,5 +43,5 @@ object Top extends App {
 
   val audioParams = AudioParams.hardware
 
-  VerilogGen(new Top(audioParams = audioParams), "echoNew", outDir = "generated")
+  VerilogGen(new Top(audioParams = audioParams), "echoLessQueue", outDir = "generated")
 }
