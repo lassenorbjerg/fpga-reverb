@@ -4,8 +4,8 @@ import audio._
 import chisel.lib.uart._
 import chisel3._
 import chisel3.util._
-import utils._
 import serial.UartTx
+import utils._
 
 /** Reads UART bits and links it to AudioCore as bytes
   */
@@ -13,7 +13,7 @@ class Top(audioParams: AudioParams) extends Module {
   val io = IO(new Bundle {
     val rxd = Input(Bool())
     val txd = Output(Bool())
-    val sw = Input(Switches.T_)
+    val sw = Input(SwitchesConfig.T_)
   })
 
   val rx = Module(
@@ -35,7 +35,7 @@ class Top(audioParams: AudioParams) extends Module {
   val core = Module(new AudioCore(p = audioParams))
   core.io.sw := io.sw
 
-  core.io.rx <> Queue(rx.io.channel, Env.rxQueueDepth) // consumer :<>= producer
+  core.io.rx <> rx.io.channel
   tx.io.channel :<>= core.io.tx // consumer :<>= producer
 }
 
@@ -43,5 +43,9 @@ object Top extends App {
 
   val audioParams = AudioParams.hardware
 
-  VerilogGen(new Top(audioParams = audioParams), "echoLessQueue", outDir = "generated")
+  VerilogGen(
+    new Top(audioParams = audioParams),
+    "echoLessQueue",
+    outDir = "generated"
+  )
 }

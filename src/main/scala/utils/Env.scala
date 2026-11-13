@@ -5,20 +5,20 @@ import chisel3.util._
 
 class Switches extends Bundle {
   // The first field declared ends up on the MSBs
-  val placeHolder2 = UInt(2.W) // sw[10:9]
-  val placeHolder = UInt(1.W) // sw[8]
-  val gain = UInt(8.W) // sw[7:0]
+  val rest = SwitchesConfig.restT
+  val gain = SwitchesConfig.gainT
 }
 
-object Switches {
+object SwitchesConfig {
 
   def T_ = UInt(Board.amntSwitches.W)
 
-  def apply(raw: UInt): Switches = {
-    val w = (new Switches).getWidth
-    require(w <= Board.amntSwitches, "Too many switches defined.")
-    raw(w - 1, 0).asTypeOf(new Switches)
-  }
+  val gainT = SInt(8.W) // sw[7:0]
+
+  val regions = List(gainT)
+
+  val numOccupied: Int = regions.map(_.getWidth).reduceLeft(_ + _)
+  val restT = UInt((Board.amntSwitches - numOccupied).W)
 }
 
 object Board {
@@ -30,10 +30,10 @@ object Board {
 object Env {
   val sampleWidth: Int = 16 // bits per PCM sample
   val delayDepth: Int = 4 // How many samples each delay line can hold
+  val maxSampleVal: Int = 2 << (sampleWidth - 1) - 1  // 2^(w-1) - 1
+  val minSampleVal: Int = -2 << (sampleWidth - 1)     // -2^(w-1)
+  val maxAmp: Int = maxSampleVal * 3/4                // We do not want to break our ears o_O
 
-  val rxQueueDepth: Int = 32
-  val txQueueDepth: Int = 16
-
-  val BaudRate: Int = 921_600  // bits/s
+  val BaudRate: Int = 921_600 // bits/s
   val sampleRate: Int = 48_000 // Hz
 }

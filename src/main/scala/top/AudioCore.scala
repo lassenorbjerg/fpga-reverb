@@ -13,13 +13,13 @@ class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
   val io = IO(new Bundle {
     val rx = Flipped(new UartIO())
     val tx = new UartIO()
-    val sw = Input(Switches.T_)
+    val sw = Input(SwitchesConfig.T_)
   })
 
   val toSamples = Module(new BytesToSample(p))
   val toBytes = Module(new SamplesToBytes(p))
 
-  toSamples.in <> io.rx
+  toSamples.in <> Queue(io.rx, p.bytesPerSample)
 
   // Should just echo out the input
   toBytes.in <> toSamples.out
