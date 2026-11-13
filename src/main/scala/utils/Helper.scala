@@ -2,16 +2,27 @@ package utils
 import chisel3._
 import chisel3.util._
 
-object SampleHelperSInt {
+object SampleHelper {
 
-  /** Samples should not overflow. Currently just saturates. Generates
-    *   - comparator if in >= max
-    *   - a mux that chooses max if above threshold
+  /**
+    * Samples should not overflow when added. Assumes that 
     *
-    * @param raw
+    * @param gainedSample
+    * @param threshold
     * @return
     */
   def saturate(gainedSample: SInt, threshold: Int = Env.maxAmp): SInt = {
     Mux(gainedSample >= threshold.S, threshold.S, gainedSample)
+    val saturatedSample: SInt = Wire(SInt())
+    when(gainedSample.abs >= threshold.S) {
+      when(gainedSample(gainedSample.getWidth - 1)) {
+        saturatedSample := (-threshold).S
+      }.otherwise {
+        saturatedSample := threshold.S
+      }
+    }.otherwise {
+      saturatedSample := gainedSample
+    }
+    saturatedSample
   }
 }

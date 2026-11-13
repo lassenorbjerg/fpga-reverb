@@ -21,7 +21,7 @@ abstract class AudioEffect(params: AudioParams) extends Module {
   val out = IO(Decoupled(params.sample))
 
   val sampleIn = RegInit(0.S(params.sampleWidth.W))
-  val sampleOutBuffer = RegInit(0.S(params.sampleWidth.W))
+  val sampleOut = RegInit(0.S(params.sampleWidth.W))
   val emptyIn = RegInit(true.B) // if in buffer is empty.
   val fullOut = RegInit(
     false.B
@@ -32,7 +32,7 @@ abstract class AudioEffect(params: AudioParams) extends Module {
   val (processedSample, processingDone) = effect()
   out.valid := processingDone && fullOut // ready to be consumed. And we have not been consumed
 
-  sampleOutBuffer := Mux(processingDone, processedSample, sampleOutBuffer)
+  sampleOut := Mux(processingDone, processedSample, sampleOut)
 
   when(in.fire) { // we want to save the sample while waiting for a new one
     sampleIn := in.bits

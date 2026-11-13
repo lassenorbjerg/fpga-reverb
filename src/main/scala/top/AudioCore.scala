@@ -19,9 +19,12 @@ class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
   val toSamples = Module(new BytesToSample(p))
   val toBytes = Module(new SamplesToBytes(p))
 
-  toSamples.in <> Queue(io.rx, p.bytesPerSample)
+  toSamples.in <> Queue(io.rx, p.bytesPerSample)  // queue to give a little headroom
 
-  // Should just echo out the input
-  toBytes.in <> toSamples.out
+  val sample: DecoupledIO[SInt] = toSamples.out
+
+  val gain = Module(new Gain(p))
+
+  toBytes.in <> AudioEffect.chain(src=sample, effects=Seq(gain))
   toBytes.out <> io.tx
 }

@@ -9,9 +9,9 @@ import util._
 class Gain(params: AudioParams) extends AudioEffect(params) {
   val gainIn = IO(Input(SwitchesConfig.gainT)) // SInt
 
-  val gainedSample = 
-
   override def effect(): (SInt, Bool) = {
-    SampleHelperSInt.saturate()
+    val gainedSample = // check if sample is negative, then we subtract otherwise add
+      Mux(sampleIn(sampleIn.getWidth - 1), sampleIn - gainIn, sampleIn + gainIn)
+    (SampleHelper.saturate(gainedSample), true.B)
   }
 }
