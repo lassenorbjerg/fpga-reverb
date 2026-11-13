@@ -1,5 +1,5 @@
 
-main ?= "EchoDemo"
+main ?= "top.Top"
 
 all:
 	sbt "runMain $(main)"

@@ -33,7 +33,7 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports clo
  
 
 ## LEDs
-set_property PACKAGE_PIN U16 [get_ports {io_led}]					
+# set_property PACKAGE_PIN U16 [get_ports {io_led}]					
 # set_property PACKAGE_PIN E19 [get_ports {io_led[1]}]					
 # set_property PACKAGE_PIN U19 [get_ports {io_led[2]}]					
 # set_property PACKAGE_PIN V19 [get_ports {io_led[3]}]
@@ -97,7 +97,7 @@ set_property PACKAGE_PIN T17 [get_ports reset]
 
  
 ##USB-RS232 Interface
-set_property PACKAGE_PIN A18 [get_ports io_tx]						
+# set_property PACKAGE_PIN A18 [get_ports io_tx]						
 # set_property PACKAGE_PIN B18 [get_ports io_rx]						
 
 

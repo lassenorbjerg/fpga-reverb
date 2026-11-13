@@ -85,7 +85,7 @@ except ImportError:  # serial_send drags in sounddevice/numpy; stay usable witho
 
 
 DEFAULT_CLOCK = 100_000_000  # Basys3 system clock
-DEFAULT_VERILOG = "EchoDemo.v"
+DEFAULT_VERILOG = "echoNew.v"
 FRAME_BITS = 10  # 1 start + 8 data + 1 stop, as the host adapter sees it
 
 # Baud rates an FTDI/Digilent adapter will normally accept, for --mode sweep.

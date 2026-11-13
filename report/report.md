@@ -43,12 +43,10 @@ The Basys3 has 50 blocks of BRAM (1800Kb total) [^9]. Each block can - among oth
 
 If we use 24 bits. We can have $72/24 = 3$ samples at every row. We can then have $512*50 = 25600$. If we have a sample rate of 44.1kHz, we have a buffer of $25600/44100 = 0.58s$. Typical ranges of reverb is between 0.8 and 4s[^8]. We might have to loop the fifo onto itself. For now we can live with this. If we wanted to utilize the multi line of samples, we could have a setup like
 
-<!-- Look at the template macro and try different configs to see if it still holds. Seems like you can just do w/e you want-->
-
 ![image](docs/fifo_lines.svg)
 **Figure [^fifo_lines]: Samples can be copied to 3 lines for the fifo block. This can be used e.g. as a delay line, a real line, and a processed line - like shown in the figure.**
 
-The BRAM is inferred from a FIFO template in Vivado for the artix 7. There is a macro for a dual clock FIFO `FIFO_DUAL_CLOCK_MACRO`. 
+This will be abstracted away by letting Chisel and Vivado infer what is meant through Chisel's .
 
 
 ## Results
@@ -78,6 +76,25 @@ $$
 15 seconds is more than plenty for simple echoes. This shows that Buffer size is not a blocker.
 
 
+### Making it real-time
+
+#### Baud rate needs much higher
+#### Tx 2 stop bits reducing throughput
+
+
+
+### Making the gain
+### Making the delay
+### Making the stutter
+### Making the comb filter
+### Making the all-pass filter
+### Making the Schroeder Reverb
+
+
+
+
+
+
 ## Discussion
 
 
@@ -97,6 +114,123 @@ haiku 5.5 (selected io without types)
 can you infer the types and so on
 ```
 created the depth based on the table
+
+### Scala class Hierarchy
+```
+opus 5.5
+
+I need help setting up my chisel project in a way such that I can just implement the modules kind of separately and easily tie them together
+
+Embedding
+[list of goals for the project]
+[README.md at commit a53c473cb9ccaeb8c2dba482e3a8d55eda93199b]
+[report.md at commit a53c473cb9ccaeb8c2dba482e3a8d55eda93199b]
+```
+
+```
+Claude sample response:
+Every effect extends one small base class, AudioEffect. It has a sample stream in (in) and a sample stream out (out), both ready/valid (Decoupled(SInt)). Controls like delay or gain are extra ports that each effect declares itself. Because every effect has the same stream ports, joining them is one line:
+toBytes.in <> AudioEffect.chain(toSamples.out, Seq(gain, delay, comb))
+The full pipeline lives in AudioCore:
+
+rx bytes → Queue → BytesToSamples → [effects] → SamplesToBytes → Queue → tx bytes
+
+AudioParams holds the sample width and buffer depth, so changing the bit depth is a one-line change.
+```
+
+### How to Write Report and README
+
+Full response can be found at https://github.com/lassenorbjerg/fpga-reverb/blob/8eddd3cf42ab67c650e76f2ee1c1fcf9d2181350/docs/archive/How%20to%20Write%20Report%20and%20README.md
+
+```sh
+> cat ~/.claude/CLAUDE.md                         
+Be a sparring partner: short answers, show code in chat, don't edit files unless I ask.
+```
+
+```
+Opus 5.5
+I want to completely rewrite the readme. And i want to restructure the report or at least get help with how to structure it for what I want. I want to get an overview and like what should be included and not. README should of course give a brief introduction (written by me, with keypoints to include by you). Give some guidance on how to setup the project. For general how to setup chisel just link to https://github.com/schoeberl/chisel-lab/blob/master/Setup.md It should also describe the setup for the fpga and computer and micriphone. How to setup env, scripts and such. Which commands to run. Setting baud rate on windows. Point to xdc on the naming, that there is a new one for each major feature as well as a new verilog file for each feature. Also help me streamline the file structure in this folder. What should be removed, groupings, new folders, etc. Suggest a place, where I can easily write a description for all the files, which i can link in the readme. For the report I want to know where to put new things. And know what is relevant. I like the idea of having it kinda iterative like the idea with the `### Making it real-time section`. But I need a good outline for the whole report. You shouldn't write any of the actual report. But just how it should be structured. Take a look at `README.md#Predefined goals`. Use that to help guide what should be included in the report. Also make a small general document, but still directed for this report (here you can write freely) about how to write a report. What is important to include, what is not? What should be cited. what is the general writing style of a report. any pointers.
+```
+
+#### README Skeleton
+```md
+# FPGA Reverb
+<intro paragraph + setup.svg>
+
+## Status
+| Feature | Branch/tag | Verilog | XDC | Works |
+
+## Requirements
+- Hardware: Basys3, micro-USB cable, microphone (+ optional audio interface), headphones
+- Software: JDK 21, sbt, Vivado 2025.1, Python ≥3.10
+- Chisel toolchain: https://github.com/schoeberl/chisel-lab/blob/master/Setup.md
+  (Windows gotchas, sbt path without spaces, Metals: see docs/setup.md)
+
+## Build the hardware
+sbt test
+sbt "runMain top.Top"        # -> generated/<feature>.v
+
+## Program the FPGA (Vivado)
+1. New RTL project, part xc7a35tcpg236-1
+2. Add generated/<feature>.v as source + xdc/<feature>.xdc as constraint
+3. Generate bitstream → Hardware Manager → Program
+> Naming: every major feature has its own generated/<feature>.v and a matching
+> xdc/<feature>.xdc with the same base name. xdc/Basys3_Master.xdc is the untouched Digilent template.
+
+## Host setup
+### Python env
+cd scripts; python -m venv .venv; .\.venv\Scripts\activate.ps1; pip install -r requirements.txt
+### Find the COM port
+python -m serial.tools.list_ports
+### Set baud rate (Windows)
+Device Manager → Ports (COM & LPT) → USB Serial Port → Properties → Port Settings → 921600
+> Must match Env.BaudRate in src/main/scala/utils/Env.scala
+### Audio
+Pick the mic/interface as Windows default input. Use headphones (feedback).
+
+## Run
+python scripts/serial_send.py COM4 -b 921600 -r 44100 --recv play   # live mic through FPGA
+python scripts/serial_send.py --no-serial --recv play                # no board, loopback
+python scripts/serial_file.py COM4 audio.wav                         # file round trip
+python scripts/uart_debug.py COM4                                    # link diagnosis
+
+## Repository layout → docs/files.md
+## Report → report/report.md
+## License
+```
+
+#### Suggested repo layout
+```
+fpga-reverb/
+├── README.md, LICENSE, build.sbt, project/, makefile
+├── src/{main,test}/scala/{audio,serial,top,utils}
+├── generated/<feature>.v
+├── xdc/<feature>.xdc  (+ Basys3_Master.xdc template)
+├── scripts/
+│   ├── requirements.txt, serial_*.py, uart_debug.py
+│   ├── ref_model/volume_control_ref.py
+│   └── testdata/
+├── report/
+│   ├── report.md
+│   └── figures/        # setup.svg, fifo_lines.*, fsmd0_1_0.drawio.svg
+└── docs/
+    ├── files.md        # ← the per-file descriptions
+    ├── setup.md        # Windows/Metals/firtool details from the current README
+    └── devlog.md       # the 0.1.0 → 0.3.2 notes (raw material for the report)
+```
+
+#### files.md structure
+
+```
+**`docs/files.md`** is the place to write a description of every file; link it from the README. One table per folder:
+```
+```md
+## src/main/scala/audio
+| File | Purpose | Since |
+|---|---|---|
+| AudioEffect.scala | Base class: Decoupled(SInt) in/out + `chain` helper | 0.3.0 |
+| SampleCodec.scala | Bytes ↔ samples | 0.3.0 |
+```
 
 
 ## References
