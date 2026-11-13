@@ -5,8 +5,8 @@ import chisel3.util._
 
 class Switches extends Bundle {
   // The first field declared ends up on the MSBs
-  val rest = SwitchesConfig.restT
-  val gain = SwitchesConfig.gainT
+  val rest = Input(SwitchesConfig.restT)
+  val gain = Input(SwitchesConfig.gainT)
 }
 
 object SwitchesConfig {
@@ -19,6 +19,7 @@ object SwitchesConfig {
 
   val numOccupied: Int = regions.map(_.getWidth).reduceLeft(_ + _)
   val restT = UInt((Board.amntSwitches - numOccupied).W)
+  // val restT = UInt((Board.amntSwitches - 8).W)
 }
 
 object Board {

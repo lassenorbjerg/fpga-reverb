@@ -13,8 +13,12 @@ class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
   val io = IO(new Bundle {
     val rx = Flipped(new UartIO())
     val tx = new UartIO()
-    val sw = Input(SwitchesConfig.T_)
+    val sw = Input(new Switches)
   })
+
+  
+
+  val switches = new Switches()
 
   val toSamples = Module(new BytesToSample(p))
   val toBytes = Module(new SamplesToBytes(p))
@@ -24,6 +28,7 @@ class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
   val sample: DecoupledIO[SInt] = toSamples.out
 
   val gain = Module(new Gain(p))
+  gain.switches := io.sw
 
   toBytes.in <> AudioEffect.chain(src=sample, effects=Seq(gain))
   toBytes.out <> io.tx

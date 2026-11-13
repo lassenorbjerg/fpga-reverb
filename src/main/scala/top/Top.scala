@@ -33,7 +33,7 @@ class Top(audioParams: AudioParams) extends Module {
   io.txd := tx.io.txd
 
   val core = Module(new AudioCore(p = audioParams))
-  core.io.sw := io.sw
+  core.io.sw := io.sw.asTypeOf(new Switches)
 
   core.io.rx <> rx.io.channel
   tx.io.channel :<>= core.io.tx // consumer :<>= producer
@@ -45,7 +45,7 @@ object Top extends App {
 
   VerilogGen(
     new Top(audioParams = audioParams),
-    "echoLessQueue",
+    "effectChainGain",
     outDir = "generated"
   )
 }

@@ -13,7 +13,7 @@ object SampleHelper {
     */
   def saturate(gainedSample: SInt, threshold: Int = Env.maxAmp): SInt = {
     Mux(gainedSample >= threshold.S, threshold.S, gainedSample)
-    val saturatedSample: SInt = Wire(SInt())
+    val saturatedSample: SInt = Wire(SInt(gainedSample.getWidth.W))
     when(gainedSample.abs >= threshold.S) {
       when(gainedSample(gainedSample.getWidth - 1)) {
         saturatedSample := (-threshold).S
