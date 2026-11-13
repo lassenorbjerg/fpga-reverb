@@ -4,22 +4,14 @@ Iteration notes from 0.1.0 onward. Raw material for the report (see [report/repo
 
 ## Glossary
 
-|  Term     | Alias      | Definition      |
-|  ---  |  ---  |  ---  |
-|       |       |       |
-|       |       |       |
-|       |       |       |
+| Term   | Alias | Definition                                                                                           |
+| ------ | ----- | ---------------------------------------------------------------------------------------------------- |
+| Host   | PC    | The pc with connections to a microphone and a speaker. Sends data through UART.                      |
+| Device | FPGA  | The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART. |
+|        |       |                                                                                                      |
 
 
 
-- Host
-```
-The pc with connections to a microphone and a speaker. Sends data through UART.
-```
-- Device
-```
-The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART.
-```
 
 # 0.3.2 - Create intentional Delay
 

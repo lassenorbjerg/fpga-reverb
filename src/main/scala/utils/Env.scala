@@ -22,15 +22,15 @@ object Switches {
 }
 
 object Board {
-  val clockFreq = 100_000_000 // 100MHz
-  val amntSwitches = 16
+  val clockFreq: Int = 100_000_000 // 100MHz
+  val amntSwitches: Int = 16
 
 }
 
 object Env {
-  val sampleWidth = 16 // bits per PCM sample
-  val delayDepth = 4 // How many samples each delay line can hold
+  val sampleWidth: Int = 16 // bits per PCM sample
+  val delayDepth: Int = 4 // How many samples each delay line can hold
 
-  val BaudRate = 921_600
-  val sampleRate = 48_000 // Hz
+  val BaudRate: Int = 921_600
+  val sampleRate: Int = 48_000 // Hz
 }
