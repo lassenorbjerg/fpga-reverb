@@ -42,7 +42,7 @@ Everything was rewritten. Now we have some structure again.
 ![alt text](docs/image.png)
 ![alt text](docs/image-1.png)
 
-## Envelope delay calcs
+## Back of Envelope delay calcs
 $$Baud = 10^6 b/s$$
 $$clock = 100*10^6 Hz$$
 We therefore have 100 cycles if we sent each bit out again as it came in.

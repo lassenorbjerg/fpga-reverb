@@ -26,10 +26,10 @@ The baud rate used is `921600` and sample rate of `44.1kHz`.
 > See section [Set baud rate (Windows)](#set-baud-rate-windows)
 
 ## Status
-| Feature | Branch/tag | Verilog | XDC | Works |
-|  ---  |  ---  |  ---  |  ---  |  ---  |
-| Real-time raw playback | 0.3.1 | effectChainGain.v | effectChainGain.xdc | Yes. It is undistorted playback. Although it does have a fairly significant delay ~90ms |
-| Real-time raw playback | 0.3.0 | echoNew.v | echoNew.xdc | Yes. It is undistorted playback. Although it does have a fairly significant delay ~90ms |
+| Feature                    | Branch/tag | Verilog           | XDC                 | Works                                                                                          |
+| -------------------------- | ---------- | ----------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
+| Playback with effect chain | 0.3.1      | effectChainGain.v | effectChainGain.xdc | Compiles. Not yet tested synthesis. Reduced the queues. Hopefully not breaking and less delay. |
+| Real-time raw playback     | 0.3.0      | echoNew.v         | echoNew.xdc         | Yes. It is undistorted playback. Although it does have a fairly significant delay ~90ms        |
 
 
 
