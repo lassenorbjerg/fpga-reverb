@@ -4,24 +4,17 @@ import chisel3._
 import chisel3.util._
 import utils._
 
-/**
- *  Contract for all audio effects: a stream of samples in, a stream of
- * samples out, ready/valid on both sides. One input sample gives exactly one
- * output sample.
- *
- * Controls (delay, gain, ...) are extra ports declared in the subclass with
- * their own IO(...), so the stream ports stay identical across effects and
- * `AudioEffect.chain` can wire any list of them together.
- *
- * Rules:
- *  - out.valid may depend on in.valid, never on out.ready.
- *  - Never drop or invent samples; stall with ready instead.
- *
- * Subclass contract:
- * - Override effect method
- *   * See contract for `effect()`
- *
- */
+/** Contract for audio effects: stream of samples in. Stream of samples out.
+  * ready/valid on both sides. One input sample gives exactly one output sample.
+  *
+  * Controls (delay, gain, ...) are defined with `switches`.
+  * 
+  * `AudioEffect.chain` can wire any list of effects together.
+  *
+  * Rules:
+  *  - out.valid may depend on in.valid, never on out.ready.
+  *  - Stall with ready instead of dropping samples.
+  */
 abstract class AudioEffect(params: AudioParams) extends Module {
   val in = IO(Flipped(Decoupled(params.sample)))
   val out = IO(Decoupled(params.sample))
