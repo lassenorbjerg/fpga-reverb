@@ -1,6 +1,7 @@
 package utils
 import chisel3._
 import chisel3.util._
+import audio.AudioParams
 
 object SampleHelper {
 
@@ -11,14 +12,15 @@ object SampleHelper {
     * @param threshold
     * @return
     */
-  def saturate(gainedSample: SInt, threshold: Int = Env.maxAmp): SInt = {
-    Mux(gainedSample >= threshold.S, threshold.S, gainedSample)
+  def saturate(gainedSample: SInt, threshold: Option[Int] = None)(implicit p: AudioParams): SInt = {
+    val thresholdInt: Int = threshold.getOrElse(p.maxAmp)
+    Mux(gainedSample >= thresholdInt.S, thresholdInt.S, gainedSample)
     val saturatedSample: SInt = Wire(SInt(gainedSample.getWidth.W))
-    when(gainedSample.abs >= threshold.S) {
+    when(gainedSample.abs >= thresholdInt.S) {
       when(gainedSample(gainedSample.getWidth - 1)) {
-        saturatedSample := (-threshold).S
+        saturatedSample := (-thresholdInt).S
       }.otherwise {
-        saturatedSample := threshold.S
+        saturatedSample := thresholdInt.S
       }
     }.otherwise {
       saturatedSample := gainedSample

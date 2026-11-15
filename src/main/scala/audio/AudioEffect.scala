@@ -16,6 +16,7 @@ import utils._
   *  - Stall with ready instead of dropping samples.
   */
 abstract class AudioEffect(params: AudioParams) extends Module {
+  implicit val p: AudioParams = params
   val in = IO(Flipped(Decoupled(params.sample)))
   val out = IO(Decoupled(params.sample))
   val switches = IO(Input(new Switches))

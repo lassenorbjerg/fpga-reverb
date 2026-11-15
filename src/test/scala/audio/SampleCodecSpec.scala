@@ -16,8 +16,9 @@ class SampleCodecSpec
 
     implicit val p: AudioParams =
       AudioParams(sampleWidth = width, sampleRate = 64)
-    val sineSamples = // Ensure we get two full cycles  // period = sampleRate / freq
+    val sineSamples =  // Ensure we get two full cycles  // period = sampleRate / freq
       PcmSineSample(freqHz = p.sampleRate / 4, numSamples = p.sampleRate / 2)
+
 
     s"BytesToSample ($width-bit)" should "reassemble bytes" in {
       test(new BytesToSample(p = p)) { dut =>
@@ -25,9 +26,7 @@ class SampleCodecSpec
         dut.out.initSink().setSinkClock(dut.clock)
 
         for (sample <- sineSamples) {
-          dut.in.enqueueSeq(
-            toBytesLE(sample).map(_.U)
-          ) // convert sample to Byte packets and enqueue them.
+          dut.in.enqueueSeq(toBytesLE(sample).map(_.U))  // convert sample to Byte packets and enqueue them.
           dut.out.expectDequeue(
             sample.S // we expect the fully formed sample back
           )
@@ -35,7 +34,7 @@ class SampleCodecSpec
       }
     }
     s"SampleToBytes ($width-bit)" should "emit LSB first" in {
-      test(new SamplesToBytes(p = p)) { dut =>
+      test(new SamplesToBytes(p=p)) { dut =>
         dut.in.initSource().setSourceClock(dut.clock)
         dut.out.initSink().setSinkClock(dut.clock)
 

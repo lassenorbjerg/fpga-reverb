@@ -5,21 +5,21 @@ import chisel3.util._
 
 class Switches extends Bundle {
   // The first field declared ends up on the MSBs
-  val rest = Input(SwitchesConfig.restT)
-  val gain = Input(SwitchesConfig.gainT)
+  val rest = Input(UInt(8.W))
+  val gain = Input(SInt(8.W))
 }
 
 object SwitchesConfig {
 
   def T_ = UInt(Board.amntSwitches.W)
 
-  val gainT = SInt(8.W) // sw[7:0]
+  val gainT = SInt(Env.gainWidth.W) // sw[7:0]
 
   val regions = List(gainT)
 
-  val numOccupied: Int = regions.map(_.getWidth).reduceLeft(_ + _)
-  val restT = UInt((Board.amntSwitches - numOccupied).W)
-  // val restT = UInt((Board.amntSwitches - 8).W)
+  // val numOccupied: Int = regions.map(_.getWidth).reduceLeft(_ + _)
+  // val restT = UInt((Board.amntSwitches - numOccupied).W)
+  val restT = UInt(8.W)
 }
 
 object Board {
@@ -28,12 +28,14 @@ object Board {
 
 }
 
+
+/**
+  * Defaults for widths. As well as useful constants.
+  */
 object Env {
   val sampleWidth: Int = 16 // bits per PCM sample
   val delayDepth: Int = 4 // How many samples each delay line can hold
-  val maxSampleVal: Int = 2 << (sampleWidth - 1) - 1  // 2^(w-1) - 1
-  val minSampleVal: Int = -2 << (sampleWidth - 1)     // -2^(w-1)
-  val maxAmp: Int = maxSampleVal * 3/4                // We do not want to break our ears o_O
+  val gainWidth: Int = 8  // SInt
 
   val BaudRate: Int = 921_600 // bits/s
   val sampleRate: Int = 48_000 // Hz

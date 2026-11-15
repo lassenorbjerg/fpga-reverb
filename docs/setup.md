@@ -14,13 +14,13 @@
 3. Install VS Code and the **Scala (Metals)** extension. In user settings, set `"metals.javaHome"` to the JDK 21 folder.
 4. Install **firtool** (only needed when generating with `circt.stage.ChiselStage`, e.g. `emitSystemVerilog`).
    Chisel 3.6.1 expects **firtool 1.37.0**.
-   1. Download the Windows zip from the [firtool-1.37.0 release](https://github.com/llvm/circt/releases/tag/firtool-1.37.0).
+   1. Download the Windows zip from the [firtool-1.37.2 release](https://github.com/llvm/circt/releases/tag/firtool-1.37.2).
       - Chisel (3.6.1) was published against firtool version 1.37.0.
    2. Unzip it to a path **without spaces**, e.g. `C:\tools\firtool-1.37.0`.
    3. Add its `bin` folder to `PATH`, e.g. in PowerShell:
       ```ps1
       $u = [Environment]::GetEnvironmentVariable("Path", "User")
-      [Environment]::SetEnvironmentVariable("Path", "$u;C:\tools\firtool-1.37.0\bin", "User")
+      [Environment]::SetEnvironmentVariable("Path", "$u;C:\tools\firtool-1.37.2\bin", "User")
       ```
    4. Open a new terminal and restart VS Code. `firtool --version` should print `1.37.0`.
 
