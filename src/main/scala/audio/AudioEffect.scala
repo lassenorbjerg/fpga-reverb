@@ -3,17 +3,18 @@ package audio
 import chisel3._
 import chisel3.util._
 import utils._
+import chiseltest.formal.past
 
 /** Contract for audio effects: stream of samples in. Stream of samples out.
   * ready/valid on both sides. One input sample gives exactly one output sample.
   *
   * Controls (delay, gain, ...) are defined with `switches`.
-  * 
+  *
   * `AudioEffect.chain` can wire any list of effects together.
   *
   * Rules:
-  *  - out.valid may depend on in.valid, never on out.ready.
-  *  - Stall with ready instead of dropping samples.
+  *   - out.valid may depend on in.valid, never on out.ready.
+  *   - Stall with ready instead of dropping samples.
   */
 abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
@@ -23,21 +24,25 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
 
   val sampleIn = RegInit(0.S(params.sampleWidth.W))
   val sampleOut = RegInit(0.S(params.sampleWidth.W))
-  val emptyIn = RegInit(true.B) // if in buffer is empty.
+  val emptyIn = RegInit(false.B) // initially we have no input
   val fullOut = RegInit(
     false.B
   ) // we want to be able to control valid after out has been consumed.
 
   in.ready := emptyIn // if empty: we have consumed our sample. we are ready for another one.
 
-  val processedSample = Wire(SInt(params.sampleWidth.W)) // Should be set in child classes
+  val processedSample = Wire(
+    SInt(params.sampleWidth.W)
+  ) // Should be set in child classes
   val processingDone = Wire(Bool()) // Should be set in child classes
-  effect()  // run effect. Sets processedSample and processingDone wires
+  effect() // run effect. Sets processedSample and processingDone wires
 
   out.valid := processingDone && fullOut // ready to be consumed. And we have not been consumed
   out.bits := processedSample
-
-  sampleOut := Mux(processingDone, processedSample, sampleOut)
+  when((!past(processingDone)) && processingDone) { // posedge
+    sampleOut := processedSample
+    fullOut := true.B
+  }
 
   when(in.fire) { // we want to save the sample while waiting for a new one
     sampleIn := in.bits
@@ -49,10 +54,8 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
 
   /** This should do w/e the effect is. In this it just pumps out the input.
     * Contract:
-    * - `processedSample` wire SInt
-    *   * Set to the processed sample
-    * - `processingDone` wire Bool
-    *   * Is processedSample valid?
+    *   - `processedSample` wire SInt * Set to the processed sample
+    *   - `processingDone` wire Bool * Is processedSample valid?
     *
     * @return
     */
