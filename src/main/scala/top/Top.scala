@@ -18,16 +18,16 @@ class Top(audioParams: AudioParams) extends Module {
 
   val rx = Module(
     new Rx(
-      frequency = Board.clockFreq,
-      baudRate = Env.BaudRate
+      frequency = audioParams.clockFreq,
+      baudRate = audioParams.baudRate
     )
   )
   rx.io.rxd := io.rxd
 
   val tx = Module(
     new UartTx(
-      frequency = Board.clockFreq,
-      baudRate = Env.BaudRate
+      frequency = audioParams.clockFreq,
+      baudRate = audioParams.baudRate
     )
   )
   io.txd := tx.io.txd

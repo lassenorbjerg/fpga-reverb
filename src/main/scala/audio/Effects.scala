@@ -6,7 +6,7 @@ import utils._
 
 import util._
 
-class Gain(params: AudioParams) extends AudioEffect(params) {
+class Gain()(implicit params: AudioParams) extends AudioEffect() {
     val gainIn = switches.gain
     val added = sampleIn + gainIn
     val subbed = sampleIn - gainIn

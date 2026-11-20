@@ -15,7 +15,7 @@ import utils._
   *  - out.valid may depend on in.valid, never on out.ready.
   *  - Stall with ready instead of dropping samples.
   */
-abstract class AudioEffect(params: AudioParams) extends Module {
+abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
   val in = IO(Flipped(Decoupled(params.sample)))
   val out = IO(Decoupled(params.sample))

@@ -2,7 +2,9 @@ package audio
 
 import chisel3._
 import chisel3.util._
-import utils.Env
+import utils.Env.gainWidth
+import utils.Env.sampleWidth
+import utils._
 
 /** Everything that decides widths lives here, so changing bit depth or buffer
   * size is a one-line change and every module follows.
@@ -19,7 +21,9 @@ case class AudioParams(
     val sampleWidth: Int = Env.sampleWidth,
     val delayDepth: Int = Env.delayDepth,
     val sampleRate: Int = Env.sampleRate,
-    val gainWidth: Int = Env.gainWidth
+    val gainWidth: Int = Env.gainWidth,
+    val baudRate: Int = Env.BaudRate,
+    val clockFreq: Int = Board.clockFreq
 ) {
   require(sampleWidth > 0, "Sample width must be positive")
   require(delayDepth > 0, "Delay depth must be positive")
@@ -31,18 +35,22 @@ case class AudioParams(
   val bytesPerSample: Int = sampleWidth / 8
   val delayAddrWidth: Int = log2Ceil(delayDepth)
 
-  
-  val maxSampleVal: Int = 2 << (sampleWidth - 1) - 1  // 2^(w-1) - 1
-  val minSampleVal: Int = -2 << (sampleWidth - 1)     // -2^(w-1)
-  val maxAmp: Int = maxSampleVal * 3/4                // We do not want to break our ears o_O
-  val maxGain: Int = ((1 << (gainWidth - 1)) - 1)  // It is signed.
+  val maxSampleVal: Int = 2 << (sampleWidth - 1) - 1 // 2^(w-1) - 1
+  val minSampleVal: Int = -2 << (sampleWidth - 1) // -2^(w-1)
+  val maxAmp: Int = maxSampleVal * 3 / 4 // We do not want to break our ears o_O
+  val maxGain: Int = ((1 << (gainWidth - 1)) - 1) // It is signed.
 
   /** A fresh sample type. Call it, don't share one instance between ports. */
   def sample: SInt = SInt(sampleWidth.W)
 }
 
 object AudioParams {
-  val hardware =
-    AudioParams(sampleWidth = Env.sampleWidth, delayDepth = Env.delayDepth)
-  val test = AudioParams()
+  val hardware = AudioParams() // use all defaults
+  val test = AudioParams(  // predefined parameters useful for most tests
+    sampleWidth = 16,
+    sampleRate = 64,
+    gainWidth = 4,
+    baudRate = 256,
+    clockFreq = 512
+  )
 }

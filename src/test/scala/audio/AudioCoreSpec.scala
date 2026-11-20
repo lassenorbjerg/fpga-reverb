@@ -2,19 +2,19 @@ package audio
 
 import chisel3._
 import chisel3.util._
+import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import top.AudioCore
 
 import AudioTestingUtils._
-import chiseltest._
-import top.AudioCore
 
 class AudioCoreSpec
     extends AnyFlatSpec
     with ChiselScalatestTester
     with Matchers {
   implicit val p: AudioParams =
-    AudioParams(sampleWidth = 16, sampleRate = 64)
+    AudioParams.hardware
   "AudioCore" should "send out received bytes but with added gain" in {
     test(new AudioCore(p = p)) { dut =>
       dut.io.rx.initSource().setSourceClock(dut.clock)

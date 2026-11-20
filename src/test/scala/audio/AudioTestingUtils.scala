@@ -1,4 +1,6 @@
 package audio
+import chisel3._
+import chisel3.util._
 
 object AudioTestingUtils {
 
@@ -58,5 +60,23 @@ object AudioTestingUtils {
     else (sample <= -threshold)
     sample
 
+  }
+}
+
+object UartUtils {
+
+  /** Return byte as a 8n1 uart frame.
+    *
+    * In tests poke rx port. The clock should be stepped for clkFreq/baudRate
+    * steps.
+    *
+    * @param byte
+    * @return
+    */
+  def uartFrame(byte: Int): Seq[Int] =
+    Seq(0) ++ (0 until 8).map(i => (byte >> i) & 1) ++ Seq(1)
+
+  def cyclesPerBit()(implicit p: AudioParams): Int = {
+    (p.clockFreq.toDouble / p.baudRate).toInt // should it be ceiled?
   }
 }
