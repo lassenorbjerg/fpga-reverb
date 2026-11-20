@@ -4,12 +4,12 @@ import audio.UartUtils.cyclesPerBit
 import chisel3._
 import chisel3.util._
 import chiseltest._
+import chiseltest.formal.past
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import top.Top
 
 import AudioTestingUtils._
-import chiseltest.formal.past
 
 class TopSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
   implicit val p: AudioParams =
@@ -22,7 +22,7 @@ class TopSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
           AudioTestingUtils.PcmSineSample(freqHz = 10_000, numSamples = 50)
         sineSample.foreach((byte: Int) => {
           UartUtils
-            .uartFrame(byte)
+            .uartFrameBits(byte)
             .foreach((b: Int) => {
               dut.io.rxd.poke(b.B)
               dut.clock.step(cyclesPerBit())

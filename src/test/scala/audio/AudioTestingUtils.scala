@@ -65,16 +65,28 @@ object AudioTestingUtils {
 
 object UartUtils {
 
-  /** Return byte as a 8n1 uart frame.
+  /** Return byte as a 8n1 (1 start and stop bit) uart frame as Int bits (0 or 1).
     *
-    * In tests poke rx port. The clock should be stepped for clkFreq/baudRate
+    * In tests:
+      For reading:
+      - poke rx port. The clock should be stepped for clkFreq/baudRate
     * steps.
     *
     * @param byte
     * @return
     */
-  def uartFrame(byte: Int): Seq[Int] =
+  def uartFrameBits(byte: Int): Seq[Int] =
     Seq(0) ++ (0 until 8).map(i => (byte >> i) & 1) ++ Seq(1)
+
+  /** Return byte as a 8n1 (1 start and stop bit) uart frame as UInt.
+    *
+    * Can be used to poke or as a reference for asserting.
+    *
+    * @param byte
+    * @return
+    */
+  def uartFrameUInt(byte: Int): UInt =
+    ("b" + uartFrameBits(byte).mkString).U
 
   def cyclesPerBit()(implicit p: AudioParams): Int = {
     (p.clockFreq.toDouble / p.baudRate).toInt // should it be ceiled?

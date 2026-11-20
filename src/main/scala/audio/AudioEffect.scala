@@ -15,6 +15,12 @@ import chiseltest.formal.past
   * Rules:
   *   - out.valid may depend on in.valid, never on out.ready.
   *   - Stall with ready instead of dropping samples.
+  * Contract:
+  *   - `processedSample` wire SInt
+  *     * Set to the processed sample
+  *   - `processingDone` wire Bool
+  *     * Is processedSample valid?
+  *     * Should be false if processedSample gets set to intermediate values
   */
 abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
@@ -31,28 +37,18 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
     SInt(params.sampleWidth.W)
   ) // Should be set in child classes
   val processingDone = Wire(Bool()) // Should be set in child classes
-  effect() // run effect. Sets processedSample and processingDone wires
 
-  out.valid := processingDone // ready to be consumed. And we have not been consumed
+  // ready to be consumed. And we have not begun processing new input.
+  // Therefore output should still be valid
+  out.valid := processingDone && !emptyIn
   out.bits := processedSample
+
 
   when(in.fire) { // we want to save the sample while waiting for a new one
     sampleIn := in.bits
     emptyIn := false.B
   }.elsewhen(out.fire) {
     emptyIn := true.B // both in and out has consumed. We are ready for new data
-  }
-
-  /** This should do w/e the effect is. In this it just pumps out the input.
-    * Contract:
-    *   - `processedSample` wire SInt * Set to the processed sample
-    *   - `processingDone` wire Bool * Is processedSample valid?
-    *
-    * @return
-    */
-  def effect(): Unit = {
-    processedSample := sampleIn
-    processingDone := true.B
   }
 }
 

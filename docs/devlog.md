@@ -19,7 +19,9 @@ Iteration notes from 0.1.0 onward. Raw material for the report (see [report/repo
 
 Made it use the chain. And created a simple saturate effect.
 
-It currently never sends any tx output. Investigating it through the waveforms
+It currently never sends any tx output. 
+Made generic test for Top to create waveform of.
+Investigating it through the waveforms
 - Immediate cause is improper handshaking in AudioEffect
 - gain.in.ready is high and accepts one input and then never becomes high again
   - depends on emptyIn
@@ -35,6 +37,24 @@ It currently never sends any tx output. Investigating it through the waveforms
               - never gets set to True
 
 I should make an FSM for it...
+- Might not be necessary. I guess we just expect the contract to set processingDone low when it is invalid
+  - It should be set false 
+
+There is an error in AudioCoreSpec.
+- Likely because the tx assert does not have start and stop bit
+  - Nvm. the uart module abstracts this
+
+It is failing at 3rd rising edge
+- what does rx read?
+  - 0
+    - I guess we should wait
+      - can we look for the handshake?
+comment assert and look at waveform for now
+- tx.bits does not get set
+
+![alt text](docs/image-2.png)
+
+It just gets stuck at some value. But valid and ready are still set?
 
 # 0.3.0 - Create Delay*
 
@@ -79,7 +99,8 @@ tx sends out at 1/100 of clock rate. We therefore essentially send a bit every 1
 
 
 We need to get the rx bits to a Byte
--  
+
+We can expose toBytes.in to see which sample we get when it is processed.
 
 # 0.2.0 - Create report and follow goals again
 
