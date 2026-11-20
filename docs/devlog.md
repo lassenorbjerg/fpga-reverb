@@ -17,6 +17,25 @@ Iteration notes from 0.1.0 onward. Raw material for the report (see [report/repo
 
 # 0.3.1 - Remove Delay
 
+Made it use the chain. And created a simple saturate effect.
+
+It currently never sends any tx output. Investigating it through the waveforms
+- Immediate cause is improper handshaking in AudioEffect
+- gain.in.ready is high and accepts one input and then never becomes high again
+  - depends on emptyIn
+    - only gets set true during gain.out.fire
+      - depends on toBytes.in.ready
+        - always high
+      - depends on gain.out.valid
+        - always low
+          - depends on gain.processingDone
+            - always high
+          - depends on gain.fullOut
+            - always low
+              - never gets set to True
+
+I should make an FSM for it...
+
 # 0.3.0 - Create Delay*
 
 In a way we did create the delay. Although unintentional.

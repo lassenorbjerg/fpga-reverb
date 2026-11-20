@@ -23,11 +23,7 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   val switches = IO(Input(new Switches))
 
   val sampleIn = RegInit(0.S(params.sampleWidth.W))
-  val sampleOut = RegInit(0.S(params.sampleWidth.W))
   val emptyIn = RegInit(false.B) // initially we have no input
-  val fullOut = RegInit(
-    false.B
-  ) // we want to be able to control valid after out has been consumed.
 
   in.ready := emptyIn // if empty: we have consumed our sample. we are ready for another one.
 
@@ -37,19 +33,14 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   val processingDone = Wire(Bool()) // Should be set in child classes
   effect() // run effect. Sets processedSample and processingDone wires
 
-  out.valid := processingDone && fullOut // ready to be consumed. And we have not been consumed
+  out.valid := processingDone // ready to be consumed. And we have not been consumed
   out.bits := processedSample
-  when((!past(processingDone)) && processingDone) { // posedge
-    sampleOut := processedSample
-    fullOut := true.B
-  }
 
   when(in.fire) { // we want to save the sample while waiting for a new one
     sampleIn := in.bits
     emptyIn := false.B
   }.elsewhen(out.fire) {
     emptyIn := true.B // both in and out has consumed. We are ready for new data
-    fullOut := false.B // we no longer have output to be consumed.
   }
 
   /** This should do w/e the effect is. In this it just pumps out the input.
