@@ -56,6 +56,8 @@ comment assert and look at waveform for now
 
 It just gets stuck at some value. But valid and ready are still set?
 
+I guess the abstraction makes things harder. probably just go back to checking tx in and out and make a helper function for things  
+
 # 0.3.0 - Create Delay*
 
 In a way we did create the delay. Although unintentional.
