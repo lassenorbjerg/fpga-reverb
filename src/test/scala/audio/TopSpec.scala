@@ -14,7 +14,6 @@ import chiseltest.formal.past
 class TopSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
   implicit val p: AudioParams =
     AudioParams(clockFreq = 32, baudRate = 16, sampleWidth = 8)
-  it should "generate waveform" in {
     test(new Top(audioParams = p)).withAnnotations(Seq(WriteVcdAnnotation)) {
       dut =>
         dut.clock.setTimeout(0)
