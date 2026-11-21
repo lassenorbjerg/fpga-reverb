@@ -2,8 +2,8 @@ package audio
 
 import chisel3._
 import chisel3.util._
-import utils._
 import chiseltest.formal.past
+import utils._
 
 /** Contract for audio effects: stream of samples in. Stream of samples out.
   * ready/valid on both sides. One input sample gives exactly one output sample.
@@ -16,11 +16,9 @@ import chiseltest.formal.past
   *   - out.valid may depend on in.valid, never on out.ready.
   *   - Stall with ready instead of dropping samples.
   * Contract:
-  *   - `processedSample` wire SInt
-  *     * Set to the processed sample
-  *   - `processingDone` wire Bool
-  *     * Is processedSample valid?
-  *     * Should be false if processedSample gets set to intermediate values
+  *   - `processedSample` wire SInt * Set to the processed sample
+  *   - `processingDone` wire Bool * Is processedSample valid? * Should be false
+  *     if processedSample gets set to intermediate values
   */
 abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
@@ -33,16 +31,15 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
 
   in.ready := emptyIn // if empty: we have consumed our sample. we are ready for another one.
 
-  val processedSample = Wire(
+  val processedSample = Reg(
     SInt(params.sampleWidth.W)
   ) // Should be set in child classes
-  val processingDone = Wire(Bool()) // Should be set in child classes
+  val processingDone = Reg(Bool()) // Should be set in child classes
 
   // ready to be consumed. And we have not begun processing new input.
   // Therefore output should still be valid
   out.valid := processingDone && !emptyIn
   out.bits := processedSample
-
 
   when(in.fire) { // we want to save the sample while waiting for a new one
     sampleIn := in.bits

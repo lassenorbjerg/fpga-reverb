@@ -58,6 +58,13 @@ It just gets stuck at some value. But valid and ready are still set?
 
 I guess the abstraction makes things harder. probably just go back to checking tx in and out and make a helper function for things  
 
+The audiocore is producing first part of sample - rest 0s
+- should be `01101010 01101101`
+- is        `01100000 00000000`
+
+works but is delayed now
+- fix in test
+
 # 0.3.0 - Create Delay*
 
 In a way we did create the delay. Although unintentional.

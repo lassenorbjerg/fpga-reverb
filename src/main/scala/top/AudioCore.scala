@@ -6,9 +6,8 @@ import chisel3._
 import chisel3.util._
 import utils._
 
-/**
-  * Handles what to do with the received UART bytes. And which bytes to send out.
-  *
+/** Handles what to do with the received UART bytes. And which bytes to send
+  * out.
   */
 class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
   val io = IO(new Bundle {
@@ -26,7 +25,7 @@ class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
   val gain: Gain = Module(new Gain)
   gain.switches := io.sw
   gain.in <> toSamples.out
-  toBytes.in <> gain.out
+  toBytes.in <> Queue(gain.out, 16)
 
   toBytes.out <> io.tx
 }

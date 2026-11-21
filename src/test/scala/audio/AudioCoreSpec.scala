@@ -19,6 +19,8 @@ class AudioCoreDUT(p: AudioParams) extends AudioCore(p = p) {
       val sampleWrite = Input(SInt(p.sampleWidth.W))
     }
   )
+  val clkCntr = RegInit(0.U(20.W))
+  clkCntr := clkCntr + 1.U
   val exposed = new Bundle {
     val toBytesIn = new Bundle {
       val ready = expose(toBytes.in.ready)
@@ -63,7 +65,9 @@ class AudioCoreSpec
           processedSamples += dut.exposed.toBytesIn.bits.peekInt()
         }
         assert(processedSamples.length == samples.length)
-        assert(processedSamples == samples)
+        for ((processedSample, idx) <- processedSamples.zipWithIndex) {
+          assert(processedSample == samples(idx), s"$processedSample != ${samples(idx)} @ $idx")
+        }
 
     }
   }
