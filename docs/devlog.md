@@ -10,7 +10,27 @@ Iteration notes from 0.1.0 onward. Raw material for the report (see [report/repo
 | Device | FPGA  | The FPGA receiving the raw audio. It processes the audio and sends it back to the host through UART. |
 |        |       |                                                                                                      |
 
+# 0.4.1 - Adder (FIR)
 
+# 0.4.0 - Create Comb filter
+
+We need an actual amplifier.
+- 10**(x/10)
+- ig dB does not matter
+we want to multiply our gain switches with the sample
+- what is max value?
+  - 8 bit signed
+  - max(127)
+  - min(-128)
+  - I guess we do literally just multiply and saturate
+
+Yep. Done with that now. Let's move on to comb filter i.e. we make an adder? Taking two effect chains.
+
+Comb filter ref: https://en.wikipedia.org/wiki/Comb_filter
+
+`y[n] = x[n] + ax[n-K]`
+- Where K is delay length (in samples)
+- `a` is a scaling factor
 
 
 # 0.3.2 - Create intentional Delay
