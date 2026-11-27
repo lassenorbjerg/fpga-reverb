@@ -15,6 +15,43 @@ Iteration notes from 0.1.0 onward. Raw material for the report (see [report/repo
 
 # 0.3.2 - Create intentional Delay
 
+The playback was slightly distorted (see saturation video).
+Will readd queue for the constructed rx bytes.
+For now would rather have (unintentional) delay than distorted audio.
+
+Added a kinda macro for the start done handshake. We probably want to have dynamic delay. Therefore it was removed from the AudioParams.
+
+The delay came out beautifully simple. Literally one line and then handshake.
+
+```scala
+// in=sampleIn, n=delaySamples, resetData=0.S, en=start
+val shiftReg = ShiftRegister(sampleIn, delaySamples, 0.S, start)
+oneCycleStartDoneHandshake(shiftReg)
+```
+
+As usual most of the effort was spent on tests.
+Created an amazing trait that all the effects can use.
+- It has setup for the source and sink
+- It allows you to enqueue and dequeue expect a pair of sequences
+  - we love
+  - there was some debugging because
+  ```
+  enqueueSeq(samples)
+  dequeueSeq(samples)
+  ```
+  were always stalling due to the processed sample not being consumed
+  - and now we have the lovely `enqDeqExpect`
+
+I added ability to skip zeros in pcmsinewave sample. Not actually used. but i like that it is there now.
+
+We assume that start and done cannot both be set
+- Was set to
+  - `in.ready := !busy || !validReg`
+- Which means we can be ready for input while we are busy
+  - In future this is desired
+  - current implementation works under the assumption that we do not accept new input when we are busy
+    - Note that this is per audioEffect and not for the whole chain
+
 # 0.3.1 - Remove Delay
 
 Made it use the chain. And created a simple saturate effect.
@@ -98,6 +135,8 @@ The saturate effect just does this then
   }
   done := doneReg
 ```
+
+I did synthesize it before changing handshake and it was distorted. Will probably have to add the queues again.
 
 # 0.3.0 - Create Delay*
 

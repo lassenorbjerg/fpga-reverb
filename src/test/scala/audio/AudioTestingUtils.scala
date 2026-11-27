@@ -9,14 +9,26 @@ object AudioTestingUtils {
     * @param p
     * @return
     */
-  def PcmSineSample(freqHz: Int = 2, numSamples: Int = 10)(implicit
+  def PcmSineSample(freqHz: Int = 2, numSamples: Int = 10, skipZeros: Boolean = false)(implicit
       p: AudioParams
   ): Seq[Int] = {
     val amplitude = (1 << (p.sampleWidth - 1)) - 1 // 127 for 8-bit
-    for (i <- 0 until numSamples)
-      yield (amplitude * Math.sin( // split sine wave up into samples
+    var sample = 0
+    var done = false
+    var i = 0
+    var returnedCnt = 0
+    var out = scala.collection.mutable.ArrayBuffer[Int]()
+    while (returnedCnt < numSamples) {
+      sample = (amplitude * Math.sin( // split sine wave up into samples
         2.0 * Math.PI * freqHz * i / p.sampleRate
       )).round.toInt
+      i += 1
+      if (!(skipZeros && sample == 0)) {
+        returnedCnt += 1
+        out+=sample
+      }
+    }
+    out.toSeq
   }
 
   /** Splits sample into byte sized chunks. The bytes are unsigned. And in
@@ -86,24 +98,3 @@ object UartUtils {
     (p.clockFreq.toDouble / p.baudRate).toInt // should it be ceiled?
   }
 }
-
-// object DecoupledUtils {
-//   /**
-//     * E.g. rx
-//     *
-//     * @param dut
-//     * @param source: Input E.g. rx
-//     */
-//   def setupSource(dut: Module, source: DecoupledIO[Any]): Unit = {
-//     source.initSource().setSourceClock(dut.clock)
-//   }
-//   /**
-//     * E.g. tx
-//     *
-//     * @param dut
-//     * @param sink: Output E.g. rx
-//     */
-//   def setupSink(dut: Module, sink: DecoupledIO[Any]): Unit = {
-//     sink.initSink().setSinkClock(dut.clock)
-//   }
-// }

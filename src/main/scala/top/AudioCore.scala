@@ -22,10 +22,10 @@ class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
 
   toSamples.in <> Queue(io.rx, 16)
 
-  val sat: Saturate = Module(new Saturate)
-  sat.switches := io.sw
-  sat.in <> toSamples.out
-  toBytes.in <> Queue(sat.out, 16)
+  val effect1: Delay = Module(new Delay())
+  effect1.switches := io.sw
+  effect1.in <> toSamples.out
+  toBytes.in <> effect1.out
 
   toBytes.out <> io.tx
 }

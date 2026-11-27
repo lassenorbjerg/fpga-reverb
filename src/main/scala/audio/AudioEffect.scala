@@ -20,7 +20,6 @@ import utils._
   *   - Pulse `done` high when processing is done
   *   - sampleIn will have a valid sample when `start` is high
   *   - sampleOut should be valid when `done` is high
-  *   - done=1 && start=1 is not allowed
   */
 abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
@@ -30,19 +29,19 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
 
   val busy = RegInit(false.B)
   val validReg = RegInit(false.B)
-  val sampleOut = Reg(params.sample)  // should be set by subclasses
+  val sampleOut = Reg(params.sample) // should be set by subclasses
 
-  in.ready := !busy || !validReg // we are not working on a sample or we have been consumed
+  in.ready := !busy && !validReg // we are not working on a sample and we have been consumed
   out.valid := validReg
   out.bits := sampleOut
 
   // Subclass relevant fields
   val start = in.fire // triggers subclasses to start processing
   val done = WireDefault(false.B) // subclasses set when done processing
-  val sampleIn = in.bits  // sampleIn is valid when start is pulsed
+  val sampleIn = in.bits // sampleIn is valid when start is pulsed
   // Subclass relevant fields
 
-  assume(!(start && done))
+  assume(!(start && done), "start and done must not both be high")
 
   when(start) {
     // we have started work
@@ -54,6 +53,24 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   }.elsewhen(out.fire) {
     // we have been consumed
     validReg := false.B
+  }
+
+  /** Macro for generating a start/done handshake. Whenever start is high done
+    * gets set high in next cycle.
+    *
+    * @param processedSample:
+    *   Assumed to be valid depending on start
+    */
+  def oneCycleStartDoneHandshake(processedSample: SInt): Unit = {
+    val doneReg = RegNext(RegInit(false.B))
+
+    when(start) {
+      doneReg := 1.B
+      sampleOut := processedSample
+    }.otherwise {
+      doneReg := 0.B
+    }
+    done := doneReg
   }
 }
 

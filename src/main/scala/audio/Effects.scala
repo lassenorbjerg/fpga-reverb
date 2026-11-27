@@ -7,6 +7,12 @@ import utils._
 
 import util._
 
+/**
+  * Used as a baseline of how an effect should behave
+  *
+  * @param threshold
+  * @param params
+  */
 class Saturate(threshold: Option[Int] = None)(implicit params: AudioParams)
     extends AudioEffect() {
   val gainIn = switches.gain
@@ -17,15 +23,21 @@ class Saturate(threshold: Option[Int] = None)(implicit params: AudioParams)
     Mux(isNeg, sampleIn -& gainIn, sampleIn +& gainIn)
 
   val saturatedSample = saturate(gainedSample, threshold)
-  // we are not allowed to set start and done in same cycle.
-  //   So we delay it
-  val doneReg = RegInit(false.B)
 
-  when(start) {
-    doneReg := 1.B
-    sampleOut := saturatedSample
-  }.otherwise {
-    done := 0.B
-  }
-  done := doneReg
+  oneCycleStartDoneHandshake(saturatedSample)
+}
+
+
+/**
+  * Will output 0.S until FIFO has been filled up. Note that `done` will still be set
+  * while it is being filled up.
+  *
+  * @param delaySamples: How many samples to delay by
+  * @param params
+  */
+class Delay(delaySamples: Int)(implicit params: AudioParams) extends AudioEffect() {
+    // in=sampleIn, n=delaySamples, resetData=0.S, en=start
+    val shiftReg = ShiftRegister(sampleIn, delaySamples, 0.S, start)
+
+    oneCycleStartDoneHandshake(shiftReg)
 }

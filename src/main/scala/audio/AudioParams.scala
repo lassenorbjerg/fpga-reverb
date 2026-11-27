@@ -19,21 +19,17 @@ import utils._
   */
 case class AudioParams(
     val sampleWidth: Int = Env.sampleWidth,
-    val delayDepth: Int = Env.delayDepth,
     val sampleRate: Int = Env.sampleRate,
     val gainWidth: Int = Env.gainWidth,
     val baudRate: Int = Env.BaudRate,
     val clockFreq: Int = Board.clockFreq
 ) {
   require(sampleWidth > 0, "Sample width must be positive")
-  require(delayDepth > 0, "Delay depth must be positive")
   require(sampleWidth <= 32, "Sample width must not exceed 32 bits")
   require(sampleWidth % 8 == 0, "Sample width must be a multiple of 8")
-  require(isPow2(delayDepth), "Delay depth must be a power of 2")
   require(gainWidth >= 0, "gainWidth cannot be negative")
 
   val bytesPerSample: Int = sampleWidth / 8
-  val delayAddrWidth: Int = log2Ceil(delayDepth)
 
   val maxSampleVal: Int = 2 << (sampleWidth - 1) - 1 // 2^(w-1) - 1
   val minSampleVal: Int = -2 << (sampleWidth - 1) // -2^(w-1)
