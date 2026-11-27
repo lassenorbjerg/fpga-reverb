@@ -5,20 +5,21 @@ import chisel3.util._
 
 class Switches extends Bundle {
   // The first field declared ends up on the MSBs
-  val placeHolder2 = UInt(2.W) // sw[10:9]
-  val placeHolder = UInt(1.W) // sw[8]
-  val gain = UInt(8.W) // sw[7:0]
+  val rest = Input(UInt(8.W))
+  val gain = Input(SInt(8.W))
 }
 
-object Switches {
+object SwitchesConfig {
 
   def T_ = UInt(Board.amntSwitches.W)
 
-  def apply(raw: UInt): Switches = {
-    val w = (new Switches).getWidth
-    require(w <= Board.amntSwitches, "Too many switches defined.")
-    raw(w - 1, 0).asTypeOf(new Switches)
-  }
+  val gainT = SInt(Env.gainWidth.W) // sw[7:0]
+
+  val regions = List(gainT)
+
+  // val numOccupied: Int = regions.map(_.getWidth).reduceLeft(_ + _)
+  // val restT = UInt((Board.amntSwitches - numOccupied).W)
+  val restT = UInt(8.W)
 }
 
 object Board {
@@ -27,10 +28,15 @@ object Board {
 
 }
 
+
+/**
+  * Defaults for widths. As well as useful constants.
+  */
 object Env {
   val sampleWidth: Int = 16 // bits per PCM sample
   val delayDepth: Int = 4 // How many samples each delay line can hold
+  val gainWidth: Int = 8  // SInt
 
-  val BaudRate: Int = 921_600
+  val BaudRate: Int = 921_600 // bits/s
   val sampleRate: Int = 48_000 // Hz
 }

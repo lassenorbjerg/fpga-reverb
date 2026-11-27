@@ -17,6 +17,88 @@ Iteration notes from 0.1.0 onward. Raw material for the report (see [report/repo
 
 # 0.3.1 - Remove Delay
 
+Made it use the chain. And created a simple saturate effect.
+
+It currently never sends any tx output. 
+Made generic test for Top to create waveform of.
+Investigating it through the waveforms
+- Immediate cause is improper handshaking in AudioEffect
+- gain.in.ready is high and accepts one input and then never becomes high again
+  - depends on emptyIn
+    - only gets set true during gain.out.fire
+      - depends on toBytes.in.ready
+        - always high
+      - depends on gain.out.valid
+        - always low
+          - depends on gain.processingDone
+            - always high
+          - depends on gain.fullOut
+            - always low
+              - never gets set to True
+
+I should make an FSM for it...
+- Might not be necessary. I guess we just expect the contract to set processingDone low when it is invalid
+  - It should be set false 
+
+There is an error in AudioCoreSpec.
+- Likely because the tx assert does not have start and stop bit
+  - Nvm. the uart module abstracts this
+
+It is failing at 3rd rising edge
+- what does rx read?
+  - 0
+    - I guess we should wait
+      - can we look for the handshake?
+comment assert and look at waveform for now
+- tx.bits does not get set
+
+![alt text](docs/image-2.png)
+
+It just gets stuck at some value. But valid and ready are still set?
+
+I guess the abstraction makes things harder. probably just go back to checking tx in and out and make a helper function for things  
+
+The audiocore is producing first part of sample - rest 0s
+- should be `01101010 01101101`
+- is        `01100000 00000000`
+
+works but is delayed now
+- fix in test
+  - find out how to check the handshake
+    - maybe preliminary signals / just handshake
+
+Rewrote AudioEffects
+- Now it is delayed
+- It is still stalling with the 0x6000
+That is the saturation lol
+Implementation works but test was wrong 
+
+Ok. So implementation was slightly wrong because it double sent samples. Therefore first 0s were doubly sent. Therefore the delay.
+- rework of handshake in audioeffects was done
+- subclasses set done and start work when start is high
+
+>  * Contract:
+>  *   - Begin processing the sample when `start` pulses
+>  *   - Pulse `done` high when processing is done
+>  *   - sampleIn will have a valid sample when `start` is high
+>  *   - sampleOut should be valid when `done` is high
+>  *   - done=1 && start=1 is not allowed
+
+This forced me to delay by a cycle. There are ways probably to have it be one cycle. But for now it is fine. It just needs to work.
+
+The saturate effect just does this then
+```
+  val doneReg = RegInit(false.B)
+
+  when(start) {
+    doneReg := 1.B
+    sampleOut := saturatedSample
+  }.otherwise {
+    done := 0.B
+  }
+  done := doneReg
+```
+
 # 0.3.0 - Create Delay*
 
 In a way we did create the delay. Although unintentional.
@@ -38,6 +120,30 @@ Everything was rewritten. Now we have some structure again.
 - Setup testing utils
 - Restructured README to only contain relevant information
 - Began restructuring report
+
+![alt text](docs/image.png)
+![alt text](docs/image-1.png)
+
+## Envelope delay calcs
+$$Baud = 921_600 \approx 10^6 b/s$$
+$$clock = 100*10^6 Hz$$
+$$SampleRate = 48_000 Hz$$
+clock freq is 100 times the baud
+
+
+Let's work backwards in terms of the contract with output.
+tx sends out at 1/100 of clock rate. We therefore essentially send a bit every 100 cycles.
+- The bits we send represent a byte (8N1=10bits)
+- The byte represents a 16-bit sample (2 bytes)
+- We need a sample 48000 times per second
+- Which means we need send out `48000*2=96000` bytes per second
+- So `96000*10=960000` bits per second
+
+
+
+We need to get the rx bits to a Byte
+
+We can expose toBytes.in to see which sample we get when it is processed.
 
 # 0.2.0 - Create report and follow goals again
 

@@ -1,9 +1,8 @@
 - [] Use new structure for report
+  - Report not required anymore
 - [] Fix long delay for playback
-- [] Write files.md for scripts
-- [] Write files.md for report
-- [] Write files.md for docs
-
+- [] use audioparams for clkfreq
 ## Continuous
+- [] Update readme status
 - [] Write devlog
 - [] Add new files to files.md

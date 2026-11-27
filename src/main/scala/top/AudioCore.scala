@@ -6,23 +6,26 @@ import chisel3._
 import chisel3.util._
 import utils._
 
-/**
-  * Handles what to do with the received UART bytes. And which bytes to send out.
-  *
+/** Handles what to do with the received UART bytes. And which bytes to send
+  * out.
   */
 class AudioCore(p: AudioParams = AudioParams.hardware) extends Module {
   val io = IO(new Bundle {
     val rx = Flipped(new UartIO())
     val tx = new UartIO()
-    val sw = Input(Switches.T_)
+    val sw = Input(new Switches)
   })
+  implicit val params: AudioParams = p
 
   val toSamples = Module(new BytesToSample(p))
   val toBytes = Module(new SamplesToBytes(p))
 
   toSamples.in <> Queue(io.rx, 16)
 
-  // Should just echo out the input
-  toBytes.in <> toSamples.out
+  val sat: Saturate = Module(new Saturate)
+  sat.switches := io.sw
+  sat.in <> toSamples.out
+  toBytes.in <> Queue(sat.out, 16)
+
   toBytes.out <> io.tx
 }
