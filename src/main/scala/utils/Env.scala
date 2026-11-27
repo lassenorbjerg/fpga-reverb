@@ -29,17 +29,14 @@ object Board {
 
 }
 
-
-/**
-  * Defaults for widths. As well as useful constants.
+/** Defaults for widths. As well as useful constants.
   */
 object Env {
   val sampleWidth: Int = 16 // bits per PCM sample
-  val gainWidth: Int = 8  // SInt
+  val gainWidth: Int = 8 // SInt
 
   val BaudRate: Int = 921_600 // bits/s
   val sampleRate: Int = 44_100 // Hz
 
   val msDelay: Int = 500
 }
-
