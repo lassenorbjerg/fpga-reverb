@@ -25,7 +25,7 @@ class AudioTestingUtilsSpec extends AnyFlatSpec with Matchers {
     -12539, -18204, -23170, -27245, -30273, -32137, -32767, -32137, -30273,
     -27245, -23170, -18204, -12539, -6393)  // generated in excel using below set audio params
   implicit val p: AudioParams =
-    AudioParams(sampleRate = 64, sampleWidth = 16)
+    AudioParams.test.copy(sampleRate = 64, sampleWidth = 16)
   "PcmSineSample" should "generate following lookup table" in {
     val twoHz = PcmSineSample(freqHz = 2, numSamples = 128)
     assert(twoHzRef == twoHz)
