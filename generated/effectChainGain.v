@@ -528,7 +528,7 @@ end // initial
 `endif
 `endif // SYNTHESIS
 endmodule
-module Gain(
+module Saturate(
   input         clock,
   input         reset,
   output        in_ready, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 27:14]
@@ -545,46 +545,56 @@ module Gain(
   reg [31:0] _RAND_2;
   reg [31:0] _RAND_3;
 `endif // RANDOMIZE_REG_INIT
-  reg [15:0] sampleIn; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:25]
-  reg  validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 33:25]
-  reg  readyReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 34:25]
-  wire  nValidReg = ~validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 35:19]
-  wire  _T = in_ready & in_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
-  reg [15:0] processedSample; // @[\\src\\main\\scala\\audio\\Effects.scala 12:30]
-  wire  isNeg = sampleIn[15]; // @[\\src\\main\\scala\\audio\\Effects.scala 14:25]
-  wire [15:0] _GEN_6 = {{8{switches_gain[7]}},switches_gain}; // @[\\src\\main\\scala\\audio\\Effects.scala 17:27]
-  wire [16:0] _gainedSample_T = $signed(sampleIn) - $signed(_GEN_6); // @[\\src\\main\\scala\\audio\\Effects.scala 17:27]
-  wire [16:0] _gainedSample_T_1 = $signed(sampleIn) + $signed(_GEN_6); // @[\\src\\main\\scala\\audio\\Effects.scala 17:46]
-  wire [16:0] gainedSample = isNeg ? $signed(_gainedSample_T) : $signed(_gainedSample_T_1); // @[\\src\\main\\scala\\audio\\Effects.scala 17:10]
-  wire [16:0] _GEN_2 = $signed(gainedSample) <= -17'sh6000 ? $signed(-17'sh6000) : $signed(gainedSample); // @[\\src\\main\\scala\\utils\\Helper.scala 21:51 22:23 24:23]
-  wire [16:0] processedSample_saturatedSample = $signed(gainedSample) >= 17'sh6000 ? $signed(17'sh6000) : $signed(_GEN_2
-    ); // @[\\src\\main\\scala\\utils\\Helper.scala 19:42 20:23]
-  wire [16:0] _GEN_5 = validReg & out_ready ? $signed({{1{processedSample[15]}},processedSample}) : $signed(
-    processedSample_saturatedSample); // @[\\src\\main\\scala\\audio\\Effects.scala 12:30 19:33 22:25]
-  assign in_ready = readyReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 45:12]
-  assign out_valid = validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 44:13]
-  assign out_bits = processedSample; // @[\\src\\main\\scala\\audio\\Effects.scala 26:14]
+  reg  busy; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:21]
+  reg  validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 32:25]
+  reg [15:0] sampleOut; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 33:22]
+  wire  start = in_ready & in_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
+  reg  doneReg; // @[\\src\\main\\scala\\audio\\Effects.scala 22:24]
+  wire  _T_5 = out_ready & out_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
+  wire  _GEN_0 = _T_5 ? 1'h0 : validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 54:24 56:14 32:25]
+  wire  _GEN_1 = doneReg ? 1'h0 : busy; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 50:20 52:10 31:21]
+  wire  _GEN_2 = doneReg | _GEN_0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 50:20 53:14]
+  wire  _GEN_3 = start | _GEN_1; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 47:15 49:10]
+  wire  isNeg = in_bits[15]; // @[\\src\\main\\scala\\audio\\Effects.scala 14:23]
+  wire [15:0] _GEN_10 = {{8{switches_gain[7]}},switches_gain}; // @[\\src\\main\\scala\\audio\\Effects.scala 17:25]
+  wire [16:0] _gainedSample_T = $signed(in_bits) - $signed(_GEN_10); // @[\\src\\main\\scala\\audio\\Effects.scala 17:25]
+  wire [16:0] _gainedSample_T_1 = $signed(in_bits) + $signed(_GEN_10); // @[\\src\\main\\scala\\audio\\Effects.scala 17:45]
+  wire [16:0] gainedSample = isNeg ? $signed(_gainedSample_T) : $signed(_gainedSample_T_1); // @[\\src\\main\\scala\\audio\\Effects.scala 17:8]
+  wire [16:0] _GEN_5 = $signed(gainedSample) <= -17'sh6000 ? $signed(-17'sh6000) : $signed(gainedSample); // @[\\src\\main\\scala\\utils\\Helper.scala 21:51 22:23 24:23]
+  wire [16:0] saturatedSample = $signed(gainedSample) >= 17'sh6000 ? $signed(17'sh6000) : $signed(_GEN_5); // @[\\src\\main\\scala\\utils\\Helper.scala 19:42 20:23]
+  wire  _GEN_7 = start | doneReg; // @[\\src\\main\\scala\\audio\\Effects.scala 24:15 25:13 22:24]
+  wire [16:0] _GEN_8 = start ? $signed(saturatedSample) : $signed({{1{sampleOut[15]}},sampleOut}); // @[\\src\\main\\scala\\audio\\Effects.scala 24:15 26:15 \\src\\main\\scala\\audio\\AudioEffect.scala 33:22]
+  assign in_ready = ~busy | ~validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 35:21]
+  assign out_valid = validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 36:13]
+  assign out_bits = sampleOut; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 37:12]
   always @(posedge clock) begin
-    if (reset) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:25]
-      sampleIn <= 16'sh0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:25]
-    end else if (_T) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 37:17]
-      sampleIn <= in_bits; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 38:14]
-    end
-    if (reset) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 33:25]
-      validReg <= 1'h0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 33:25]
-    end else if (validReg & out_ready) begin // @[\\src\\main\\scala\\audio\\Effects.scala 19:33]
-      validReg <= 1'h0; // @[\\src\\main\\scala\\audio\\Effects.scala 20:18]
+    if (reset) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:21]
+      busy <= 1'h0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:21]
     end else begin
-      validReg <= 1'h1; // @[\\src\\main\\scala\\audio\\Effects.scala 23:18]
+      busy <= _GEN_3;
     end
-    if (reset) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 34:25]
-      readyReg <= 1'h0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 34:25]
-    end else if (_T) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 37:17]
-      readyReg <= 1'h0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 39:14]
+    if (reset) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 32:25]
+      validReg <= 1'h0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 32:25]
+    end else if (!(start)) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 47:15]
+      validReg <= _GEN_2;
+    end
+    sampleOut <= _GEN_8[15:0];
+    if (reset) begin // @[\\src\\main\\scala\\audio\\Effects.scala 22:24]
+      doneReg <= 1'h0; // @[\\src\\main\\scala\\audio\\Effects.scala 22:24]
     end else begin
-      readyReg <= nValidReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 41:14]
+      doneReg <= _GEN_7;
     end
-    processedSample <= _GEN_5[15:0];
+    `ifndef SYNTHESIS
+    `ifdef PRINTF_COND
+      if (`PRINTF_COND) begin
+    `endif
+        if (~reset & ~(~(start & doneReg))) begin
+          $fwrite(32'h80000002,"Assumption failed\n    at AudioEffect.scala:45 assume(!(start && done))\n"); // @[\\src\\main\\scala\\audio\\AudioEffect.scala 45:9]
+        end
+    `ifdef PRINTF_COND
+      end
+    `endif
+    `endif // SYNTHESIS
   end
 // Register and memory initialization
 `ifdef RANDOMIZE_GARBAGE_ASSIGN
@@ -623,13 +633,13 @@ initial begin
     `endif
 `ifdef RANDOMIZE_REG_INIT
   _RAND_0 = {1{`RANDOM}};
-  sampleIn = _RAND_0[15:0];
+  busy = _RAND_0[0:0];
   _RAND_1 = {1{`RANDOM}};
   validReg = _RAND_1[0:0];
   _RAND_2 = {1{`RANDOM}};
-  readyReg = _RAND_2[0:0];
+  sampleOut = _RAND_2[15:0];
   _RAND_3 = {1{`RANDOM}};
-  processedSample = _RAND_3[15:0];
+  doneReg = _RAND_3[0:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -794,15 +804,15 @@ module AudioCore(
   wire  toSamples_in_q_io_deq_ready; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire  toSamples_in_q_io_deq_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire [7:0] toSamples_in_q_io_deq_bits; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
-  wire  gain_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-  wire  gain_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-  wire  gain_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-  wire  gain_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-  wire [15:0] gain_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-  wire  gain_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-  wire  gain_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-  wire [15:0] gain_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-  wire [7:0] gain_switches_gain; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
+  wire  sat_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+  wire  sat_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+  wire  sat_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+  wire  sat_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+  wire [15:0] sat_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+  wire  sat_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+  wire  sat_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+  wire [15:0] sat_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+  wire [7:0] sat_switches_gain; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
   wire  toBytes_in_q_clock; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire  toBytes_in_q_reset; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire  toBytes_in_q_io_enq_ready; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
@@ -841,16 +851,16 @@ module AudioCore(
     .io_deq_valid(toSamples_in_q_io_deq_valid),
     .io_deq_bits(toSamples_in_q_io_deq_bits)
   );
-  Gain gain ( // @[\\src\\main\\scala\\top\\AudioCore.scala 25:26]
-    .clock(gain_clock),
-    .reset(gain_reset),
-    .in_ready(gain_in_ready),
-    .in_valid(gain_in_valid),
-    .in_bits(gain_in_bits),
-    .out_ready(gain_out_ready),
-    .out_valid(gain_out_valid),
-    .out_bits(gain_out_bits),
-    .switches_gain(gain_switches_gain)
+  Saturate sat ( // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
+    .clock(sat_clock),
+    .reset(sat_reset),
+    .in_ready(sat_in_ready),
+    .in_valid(sat_in_valid),
+    .in_bits(sat_in_bits),
+    .out_ready(sat_out_ready),
+    .out_valid(sat_out_valid),
+    .out_bits(sat_out_bits),
+    .switches_gain(sat_switches_gain)
   );
   Queue_1 toBytes_in_q ( // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
     .clock(toBytes_in_q_clock),
@@ -869,7 +879,7 @@ module AudioCore(
   assign toSamples_reset = reset;
   assign toSamples_in_valid = toSamples_in_q_io_deq_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:16]
   assign toSamples_in_bits = toSamples_in_q_io_deq_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:16]
-  assign toSamples_out_ready = gain_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:11]
+  assign toSamples_out_ready = sat_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:10]
   assign toBytes_clock = clock;
   assign toBytes_reset = reset;
   assign toBytes_in_valid = toBytes_in_q_io_deq_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 28:14]
@@ -880,16 +890,16 @@ module AudioCore(
   assign toSamples_in_q_io_enq_valid = io_rx_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 383:22]
   assign toSamples_in_q_io_enq_bits = io_rx_bits; // @[src/main/scala/chisel3/util/Decoupled.scala 384:21]
   assign toSamples_in_q_io_deq_ready = toSamples_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:16]
-  assign gain_clock = clock;
-  assign gain_reset = reset;
-  assign gain_in_valid = toSamples_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:11]
-  assign gain_in_bits = toSamples_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:11]
-  assign gain_out_ready = toBytes_in_q_io_enq_ready; // @[src/main/scala/chisel3/util/Decoupled.scala 385:17]
-  assign gain_switches_gain = io_sw_gain; // @[\\src\\main\\scala\\top\\AudioCore.scala 26:17]
+  assign sat_clock = clock;
+  assign sat_reset = reset;
+  assign sat_in_valid = toSamples_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:10]
+  assign sat_in_bits = toSamples_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:10]
+  assign sat_out_ready = toBytes_in_q_io_enq_ready; // @[src/main/scala/chisel3/util/Decoupled.scala 385:17]
+  assign sat_switches_gain = io_sw_gain; // @[\\src\\main\\scala\\top\\AudioCore.scala 26:16]
   assign toBytes_in_q_clock = clock;
   assign toBytes_in_q_reset = reset;
-  assign toBytes_in_q_io_enq_valid = gain_out_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 383:22]
-  assign toBytes_in_q_io_enq_bits = gain_out_bits; // @[src/main/scala/chisel3/util/Decoupled.scala 384:21]
+  assign toBytes_in_q_io_enq_valid = sat_out_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 383:22]
+  assign toBytes_in_q_io_enq_bits = sat_out_bits; // @[src/main/scala/chisel3/util/Decoupled.scala 384:21]
   assign toBytes_in_q_io_deq_ready = toBytes_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 28:14]
 endmodule
 module Top(
