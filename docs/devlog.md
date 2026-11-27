@@ -12,6 +12,25 @@ Iteration notes from 0.1.0 onward. Raw material for the report (see [report/repo
 
 # 0.4.1 - Adder (FIR)
 
+This is OOP after all. So we might as well make individual components.
+
+We want to have a fir where we can input two samples and then they are added
+
+Oh yeah we can run the chain on w/e we want. Does't have to be all of them
+
+- Comb filter will have an adder
+- so adder will be given two samples each
+  - one of them put through a chain
+    1. Delay
+    2. Gain(saturate: maxAmp(??))
+  - Second will just be the raw sample
+
+The adder itself
+- just sampleIn1 plus sampleIn2 i guess
+  - How would I do that deriving from AudioEffect?
+    - If I just add an io field `in2`
+
+
 # 0.4.0 - Create Comb filter
 
 We need an actual amplifier.
