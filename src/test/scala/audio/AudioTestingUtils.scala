@@ -51,25 +51,19 @@ object AudioTestingUtils {
     * @param p
     * @return
     */
-  def saturateMock(
-      sample: Int,
-      threshold: Int
-  )(implicit p: AudioParams): Int = {
-    if (sample.abs.toInt > threshold)
-      sample.sign * threshold
-    else (sample <= -threshold)
-    sample
-
-  }
+  def saturateMock(sample: Int, threshold: Int)(implicit p: AudioParams): Int =
+    if (sample >= threshold) threshold
+    else if (sample <= -threshold) -threshold
+    else sample
 }
 
 object UartUtils {
 
-  /** Return byte as a 8n1 (1 start and stop bit) uart frame as Int bits (0 or 1).
+  /** Return byte as a 8n1 (1 start and stop bit) uart frame as Int bits (0 or
+    * 1).
     *
-    * In tests:
-      For reading:
-      - poke rx port. The clock should be stepped for clkFreq/baudRate
+    * In tests: For reading:
+    *   - poke rx port. The clock should be stepped for clkFreq/baudRate
     * steps.
     *
     * @param byte

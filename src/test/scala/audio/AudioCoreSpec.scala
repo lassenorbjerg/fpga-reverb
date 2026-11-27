@@ -27,6 +27,11 @@ class AudioCoreDUT(p: AudioParams) extends AudioCore(p = p) {
       val valid = expose(toBytes.in.valid)
       val bits = expose(toBytes.in.bits)
     } // the processed sample
+    val toSamplesOut = new Bundle {
+      val toSamplesOutReady = expose(toSamples.out.ready)
+      val toSamplesOutValid = expose(toSamples.out.valid)
+      val toSamplesOutBits = expose(toSamples.out.bits)
+    }  // the read sample
   }
 }
 
@@ -36,39 +41,41 @@ class AudioCoreSpec
     with Matchers {
   implicit val p: AudioParams =
     AudioParams.test
+  val timeoutMax = 100_000
   "AudioCore" should "send out received bytes but with added gain" in {
     test(new AudioCoreDUT(p = p)).withAnnotations(Seq(WriteVcdAnnotation)) {
       dut =>
         dut.io.rx.initSource().setSourceClock(dut.clock)
         dut.io.tx.initSink().setSinkClock(dut.clock)
+        dut.io.tx.ready.poke(1.B)
+
         val samples = PcmSineSample(freqHz = 2, numSamples = 128)
         val gain = 0
         dut.io.sw.gain.poke(gain)
+        val expected = samples.map(s => saturateMock(s + gain, p.maxAmp))
 
-        var processedSamples = ArrayBuffer[BigInt]()
-        var expectedSamples = ArrayBuffer[BigInt]()
+        val processed = ArrayBuffer[BigInt]()
 
-        for (sample <- samples) {
-          dut.expected.sampleRead.poke(sample.S)
-          val bytes = toBytesLE(sample)
-          dut.io.rx.enqueueSeq(bytes.map(_.U))
-          val expectedSample =
-            saturateMock(sample + gain, p.maxAmp)
-          dut.expected.sampleWrite.poke(expectedSample.S)
-          dut.io.tx.ready.poke(1.B)
-          while (
-            !(dut.exposed.toBytesIn.ready
-              .peekBoolean() && dut.exposed.toBytesIn.valid.peekBoolean())
-          ) {
+        // monitor: record every handshake into toBytes
+        val monitor = fork {
+          var timeout = 0
+          while (processed.length < samples.length && timeout < timeoutMax) {
+            if (dut.exposed.toBytesIn.ready.peekBoolean() && dut.exposed.toBytesIn.valid.peekBoolean()) {
+              processed += dut.exposed.toBytesIn.bits.peekInt()
+            }
             dut.clock.step()
+            timeout += 1
           }
-          processedSamples += dut.exposed.toBytesIn.bits.peekInt()
-        }
-        assert(processedSamples.length == samples.length)
-        for ((processedSample, idx) <- processedSamples.zipWithIndex) {
-          assert(processedSample == samples(idx), s"$processedSample != ${samples(idx)} @ $idx")
         }
 
+        // driver: push all bytes
+        dut.io.rx.enqueueSeq(samples.flatMap(toBytesLE).map(_.U))
+
+        monitor.join()
+
+       assert( processed.length == samples.length, s"processed.length =/= samples.length. ${processed.length} =/= ${samples.length}")
+        for (((got,exp),i) <- processed.zip(expected).zipWithIndex)
+          assert(got == exp, s"@$i: got $got expected $exp (in=${samples(i)})")
     }
   }
 }

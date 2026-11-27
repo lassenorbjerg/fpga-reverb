@@ -16,9 +16,11 @@ import utils._
   *   - out.valid may depend on in.valid, never on out.ready.
   *   - Stall with ready instead of dropping samples.
   * Contract:
-  *   - `processedSample` wire SInt * Set to the processed sample
-  *   - `processingDone` wire Bool * Is processedSample valid? * Should be false
-  *     if processedSample gets set to intermediate values
+  *   - derived classes set validReg and out.bits
+  *   - when validReg=1 && out.ready=1 set validReg=0
+  *   - out.bits cannot be set while validReg=1
+  *   - sampleIn can be assumed to always have a valid sample
+  *     - in the start it will be 0
   */
 abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
@@ -27,26 +29,20 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   val switches = IO(Input(new Switches))
 
   val sampleIn = RegInit(0.S(params.sampleWidth.W))
-  val emptyIn = RegInit(false.B) // initially we have no input
 
-  in.ready := emptyIn // if empty: we have consumed our sample. we are ready for another one.
+  val validReg = RegInit(false.B)  // out.valid
+  val readyReg = RegInit(false.B)  // in.ready
+  val nValidReg = !validReg
 
-  val processedSample = Reg(
-    SInt(params.sampleWidth.W)
-  ) // Should be set in child classes
-  val processingDone = Reg(Bool()) // Should be set in child classes
-
-  // ready to be consumed. And we have not begun processing new input.
-  // Therefore output should still be valid
-  out.valid := processingDone && !emptyIn
-  out.bits := processedSample
-
-  when(in.fire) { // we want to save the sample while waiting for a new one
+  when(in.fire) {
     sampleIn := in.bits
-    emptyIn := false.B
-  }.elsewhen(out.fire) {
-    emptyIn := true.B // both in and out has consumed. We are ready for new data
+    readyReg := false.B
+  }.otherwise {
+    readyReg := nValidReg  // we stall with ready while out has not been consumed
   }
+
+  out.valid := validReg
+  in.ready := readyReg
 }
 
 object AudioEffect {

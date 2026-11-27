@@ -64,6 +64,14 @@ The audiocore is producing first part of sample - rest 0s
 
 works but is delayed now
 - fix in test
+  - find out how to check the handshake
+    - maybe preliminary signals / just handshake
+
+Rewrote AudioEffects
+- Now it is delayed
+- It is still stalling with the 0x6000
+That is the saturation lol
+Implementation works but test was wrong 
 
 # 0.3.0 - Create Delay*
 
