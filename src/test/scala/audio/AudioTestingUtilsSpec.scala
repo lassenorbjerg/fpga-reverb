@@ -30,4 +30,9 @@ class AudioTestingUtilsSpec extends AnyFlatSpec with Matchers {
     val twoHz = PcmSineSample(freqHz = 2, numSamples = 128)
     assert(twoHzRef == twoHz)
   }
+  "PcmSineSample" should "generate following lookup table without zeros" in {
+    val twoHzRefNoZeros = twoHzRef.filter(_ != 0)
+    val twoHz = PcmSineSample(freqHz = 2, numSamples = twoHzRefNoZeros.length, skipZeros = true)
+    assert(twoHzRefNoZeros == twoHz)
+  }
 }

@@ -58,23 +58,32 @@ trait AudioEffectSpec extends AnyFlatSpec with ChiselScalatestTester {
 }
 
 class SaturateSpec extends AudioEffectSpec {
-  it should "saturate max amplitude" in {
-    testEffect(new Saturate(threshold = Some(p.maxAmp))) { dut =>
-      dut.in.initSource().setSourceClock(dut.clock)
-      dut.out.initSink().setSinkClock(dut.clock)
+  "SaturateAddGain" should "saturate max amplitude" in {
+    testEffect(new SaturateAddGain(threshold = Some(p.maxAmp))) { dut =>
       dut.switches.gain.poke(50.S)
       dut.in.enqueue((p.maxAmp - 20).S) // implicit gain test as well
       dut.out.expectDequeue(p.maxAmp.S)
     }
   }
-  it should "Subtract gain from negative number" in {
-    testEffect(new Saturate(threshold = Some(p.maxAmp))) { dut =>
+  "SaturateAddGain" should "Subtract gain from negative number" in {
+    testEffect(new SaturateAddGain(threshold = Some(p.maxAmp))) { dut =>
       val gain = 20
       val sample = -100
       val expected = -120
-      dut.in.initSource().setSourceClock(dut.clock)
-      dut.out.initSink().setSinkClock(dut.clock)
       dut.switches.gain.poke(gain.S)
+      dut.in.enqueue(sample.S)
+      dut.out.expectDequeue(expected.S)
+    }
+  }
+  "Saturate" should "sat input value above threshold" in {
+    val threshold = 10
+    testEffect(new Saturate(threshold = Some(threshold))) { dut =>
+      var sample = -100
+      var expected = -threshold
+      dut.in.enqueue(sample.S)
+      dut.out.expectDequeue(expected.S)
+      sample = threshold + 10
+      expected = threshold
       dut.in.enqueue(sample.S)
       dut.out.expectDequeue(expected.S)
     }
@@ -101,10 +110,10 @@ class DelaySpec extends AudioEffectSpec {
     }
   }
   it should "delay samples explicit simple" in {
-    val delaySamples = 2  // do not change
+    val delaySamples = 2 // do not change
     testEffect(
       new Delay(delaySamples = delaySamples),
-      wave=true
+      wave = true
     ) { dut =>
       dut.in.enqueue(9.S)
       dut.in.enqueue(8.S)
@@ -113,7 +122,36 @@ class DelaySpec extends AudioEffectSpec {
       dut.in.enqueue(6.S)
       dut.out.expectDequeue(8.S)
       dut.in.enqueue(5.S)
-      dut.out.expectDequeueSeq(Seq(7,6,5).map(_.S))
+      dut.out.expectDequeueSeq(Seq(7, 6, 5).map(_.S))
+    }
+  }
+}
+
+class GainSpec extends AudioEffectSpec {
+  val n = 16
+  val samples = PcmSineSample(freqHz = 7, numSamples = n, amp = Some(100))
+  assert(
+    !samples.filter(_ < 0).isEmpty,
+    "we want to test with negative samples as well"
+  )
+  it should "multiply inputs with gain" in {
+    val threshold = None
+    testEffect(new Gain(threshold)) { dut =>
+      val gain = 10
+      val expected = samples.map(_ * gain)
+      dut.switches.gain.poke(gain)
+      enqDeqExpect(samples.map(_.S), expected.map(_.S), dut)
+    }
+  }
+  it should "multiply inputs with gain and saturate" in {
+    val threshold = Some(10)
+    testEffect(new Gain(threshold)) { dut =>
+      val gain = 10
+      val expected = samples.map((v: Int) => {
+        saturateMock(v * gain, threshold.value)
+      })
+      dut.switches.gain.poke(gain)
+      enqDeqExpect(samples.map(_.S), expected.map(_.S), dut)
     }
   }
 }

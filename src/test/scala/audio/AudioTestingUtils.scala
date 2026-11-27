@@ -7,17 +7,20 @@ object AudioTestingUtils {
 
   /** @param freqHz
     * @param numSamples
+    * @param skipZeros: Will still return numSamples. But will skip 0 values
+    * @param amp: if not given will default to max amplitude
     * @param p
     * @return
     */
   def PcmSineSample(
       freqHz: Int = 2,
       numSamples: Int = 10,
-      skipZeros: Boolean = false
+      skipZeros: Boolean = false,
+      amp: Option[Int] = None
   )(implicit
       p: AudioParams
   ): Seq[Int] = {
-    val amplitude = (1 << (p.sampleWidth - 1)) - 1 // 127 for 8-bit
+    val amplitude = amp.getOrElse(p.maxSampleVal)
     var sample = 0
     var done = false
     var i = 0

@@ -30,15 +30,15 @@ case class AudioParams(
     val enAlwaysHigh: Boolean = false
 ) {
   require(sampleWidth > 0, "Sample width must be positive")
-  require(sampleWidth <= 32, "Sample width must not exceed 32 bits")
+  require(sampleWidth <= 24, "Sample width must not exceed 24 bits")
   require(sampleWidth % 8 == 0, "Sample width must be a multiple of 8")
   require(gainWidth >= 0, "gainWidth cannot be negative")
   require(msDelay >= 0, "msDelay cannot be negative")
 
   val bytesPerSample: Int = sampleWidth / 8
 
-  val maxSampleVal: Int = 2 << (sampleWidth - 1) - 1 // 2^(w-1) - 1
-  val minSampleVal: Int = -2 << (sampleWidth - 1) // -2^(w-1)
+  val maxSampleVal: Int = (1 << (sampleWidth - 1)) - 1 // 2^(w-1) - 1
+  val minSampleVal: Int = -1 << (sampleWidth - 1) // -2^(w-1)
   val maxAmp: Int = maxSampleVal * 3 / 4 // We do not want to break our ears o_O
   val maxGain: Int = ((1 << (gainWidth - 1)) - 1) // It is signed.
 
