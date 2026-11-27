@@ -12,22 +12,28 @@ import utils._
   * @param sampleWidth
   *   bits per PCM sample (8, 16 or 24). Signed two's complement, sent
   *   little-endian over UART (LSB byte first).
-  * @param delayDepth
-  *   samples in each delay line. Must be a power of two so the circular-buffer
-  *   pointer wraps for free. 16-bit x 32768 = 512 Kb, roughly 16 of the 50
-  *   BRAM36 blocks.
+  * @param sampleRate
+  * @param gainWidth
+  * @param baudRate
+  * @param clockFreq
+  * @param msDelay
+  * @param enAlwaysHigh:
+  *   Makes AudioCore always send a high `en` signal. Useful for testing
   */
 case class AudioParams(
     val sampleWidth: Int = Env.sampleWidth,
     val sampleRate: Int = Env.sampleRate,
     val gainWidth: Int = Env.gainWidth,
     val baudRate: Int = Env.BaudRate,
-    val clockFreq: Int = Board.clockFreq
+    val clockFreq: Int = Board.clockFreq,
+    val msDelay: Int = Env.msDelay,
+    val enAlwaysHigh: Boolean = false
 ) {
   require(sampleWidth > 0, "Sample width must be positive")
   require(sampleWidth <= 32, "Sample width must not exceed 32 bits")
   require(sampleWidth % 8 == 0, "Sample width must be a multiple of 8")
   require(gainWidth >= 0, "gainWidth cannot be negative")
+  require(msDelay >= 0, "msDelay cannot be negative")
 
   val bytesPerSample: Int = sampleWidth / 8
 
@@ -42,11 +48,13 @@ case class AudioParams(
 
 object AudioParams {
   val hardware = AudioParams() // use all defaults
-  val test = AudioParams(  // predefined parameters useful for most tests
+  val test = AudioParams( // predefined parameters useful for most tests
     sampleWidth = 16,
     sampleRate = 64,
     gainWidth = 4,
     baudRate = 256,
-    clockFreq = 512
+    clockFreq = 512,
+    msDelay = 0,
+    enAlwaysHigh = true
   )
 }

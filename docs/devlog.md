@@ -51,6 +51,17 @@ We assume that start and done cannot both be set
   - In future this is desired
   - current implementation works under the assumption that we do not accept new input when we are busy
     - Note that this is per audioEffect and not for the whole chain
+- Made it  `&& ` instead
+
+I definitely need to do syncReadMem
+- It is running out of heap space
+
+Spent some more time on tests. Now it is even nicer.
+
+ADded an enable to the effects
+- it triggers in each effect just passing through the unaltered sample, so the effects do not suddenly drop samples
+- Added AudioParam that allows you to always set en high
+- 
 
 # 0.3.1 - Remove Delay
 

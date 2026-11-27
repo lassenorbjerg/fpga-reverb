@@ -4,12 +4,17 @@ import chisel3.util._
 
 object AudioTestingUtils {
 
+
   /** @param freqHz
     * @param numSamples
     * @param p
     * @return
     */
-  def PcmSineSample(freqHz: Int = 2, numSamples: Int = 10, skipZeros: Boolean = false)(implicit
+  def PcmSineSample(
+      freqHz: Int = 2,
+      numSamples: Int = 10,
+      skipZeros: Boolean = false
+  )(implicit
       p: AudioParams
   ): Seq[Int] = {
     val amplitude = (1 << (p.sampleWidth - 1)) - 1 // 127 for 8-bit
@@ -25,7 +30,7 @@ object AudioTestingUtils {
       i += 1
       if (!(skipZeros && sample == 0)) {
         returnedCnt += 1
-        out+=sample
+        out += sample
       }
     }
     out.toSeq

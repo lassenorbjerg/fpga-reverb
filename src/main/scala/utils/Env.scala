@@ -5,7 +5,8 @@ import chisel3.util._
 
 class Switches extends Bundle {
   // The first field declared ends up on the MSBs
-  val rest = Input(UInt(8.W))
+  val en = Input(UInt(1.W))
+  val rest = Input(UInt(7.W))
   val gain = Input(SInt(8.W))
 }
 
@@ -38,4 +39,6 @@ object Env {
 
   val BaudRate: Int = 921_600 // bits/s
   val sampleRate: Int = 44_100 // Hz
+
+  val msDelay: Int = 20
 }

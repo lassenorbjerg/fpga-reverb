@@ -20,6 +20,7 @@ import utils._
   *   - Pulse `done` high when processing is done
   *   - sampleIn will have a valid sample when `start` is high
   *   - sampleOut should be valid when `done` is high
+  *   - sampleOut should be sampleIn when switches.en=1
   */
 abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
@@ -66,7 +67,7 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
 
     when(start) {
       doneReg := 1.B
-      sampleOut := processedSample
+      sampleOut := Mux(switches.en.asBool, processedSample, sampleIn)
     }.otherwise {
       doneReg := 0.B
     }
@@ -77,10 +78,13 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
 object AudioEffect {
 
   /** Connect src -> effects(0) -> effects(1) -> ... and return the last output.
+    * If en=0 the handshaking in the chain will still happen. But the sample
+    * returned at the end of the chain will just be the unaltered one
     */
   def chain(
       src: DecoupledIO[SInt],
-      effects: Seq[AudioEffect]
+      effects: Seq[AudioEffect],
+      en: Bool
   ): DecoupledIO[SInt] =
     effects.foldLeft(src) { // start with raw src
       (
@@ -88,6 +92,13 @@ object AudioEffect {
           effect
       ) => // accumulate the effects onto the stream (originally src)
         effect.in <> stream // send the stream into the next effect
-        effect.out // return the output of the effect
+        effect.out
     }
+
+  def connect(
+      sw: Switches,
+      effects: Seq[AudioEffect]
+  ): Unit = {
+    effects.foreach(_.switches := sw)
+  }
 }

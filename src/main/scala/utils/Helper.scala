@@ -1,7 +1,7 @@
 package utils
+import audio.AudioParams
 import chisel3._
 import chisel3.util._
-import audio.AudioParams
 
 object SampleHelper {
 
@@ -24,5 +24,18 @@ object SampleHelper {
       saturatedSample := gainedSample
     }
     saturatedSample
+  }
+
+  def msToSampleDelay(ms: Int)(implicit p: AudioParams): Int = {
+    require(ms >= 0, "requires ms >= 0")
+    // sampleRate: samples/s
+    // ms: s/1000
+    //
+    // sampleRate * ms * 1000 = sample delay
+    // samples/s * s/1000 * 1000 = samples
+    if (ms == 0) {
+      return 1
+    }
+    return p.sampleRate * ms * 1000
   }
 }

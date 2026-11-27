@@ -9,10 +9,12 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import top.AudioCore
 
-import AudioTestingUtils._
 import scala.collection.mutable.ArrayBuffer
 
-class AudioCoreDUT(p: AudioParams) extends AudioCore(p = p) {
+import AudioTestingUtils._
+
+class AudioCoreDUT(p: AudioParams)
+    extends AudioCore(p = p) {
   val expected = IO(
     new Bundle {
       val sampleRead = Input(SInt(p.sampleWidth.W))
@@ -22,7 +24,7 @@ class AudioCoreDUT(p: AudioParams) extends AudioCore(p = p) {
 
   val sampleInc = toBytes.in.fire
   val sampleCntr = RegInit(0.U(32.W))
-  sampleCntr := Mux(sampleInc, sampleCntr+1.U,sampleCntr)
+  sampleCntr := Mux(sampleInc, sampleCntr + 1.U, sampleCntr)
   val helper = IO(
     new Bundle {
       val sampleCntr = Output(UInt(32.W))
@@ -49,22 +51,33 @@ class AudioCoreSpec
     with ChiselScalatestTester
     with Matchers {
   implicit val p: AudioParams =
-    AudioParams.test
+    AudioParams(
+    sampleWidth = 16,
+    sampleRate = 64,
+    gainWidth = 4,
+    baudRate = 256,
+    clockFreq = 512,
+    msDelay = 0,
+    enAlwaysHigh = false  // we want to test en
+  )
   val timeoutMax = 100_000
   val numSamples = 128
-  "AudioCore" should "send out received bytes but with added gain" in {
-    test(new AudioCoreDUT(p = p)).withAnnotations(Seq(WriteVcdAnnotation)) {
-      dut =>
+  "AudioCore" should "en=0 should send unaltered samples back" in {
+    // Mostly used for its waveform since AudioCore is so dynamic. (might be flawed thinking o_O)
+    // And testing handshake.
+    // The effects are tested independently
+    test(new AudioCoreDUT(p = p))
+      .withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
         dut.io.rx.initSource().setSourceClock(dut.clock)
         dut.io.tx.initSink().setSinkClock(dut.clock)
         dut.io.tx.ready.poke(1.B)
 
-        val samples = PcmSineSample(freqHz = 2, numSamples = 128)
-        val gain = 0
-        dut.io.sw.gain.poke(gain)
-        // We stall with two empty samples
-        val expected =
-          samples.map(s => saturateMock(s + gain, p.maxAmp))
+        val samples =
+          PcmSineSample(freqHz = 2, numSamples = 128, skipZeros = true)
+        val en =
+          0 // we just test that the handshake works. but the effects should not be applied.
+        dut.io.sw.en.poke(en)
+        val expected = samples
 
         val processed = ArrayBuffer[BigInt]()
         var expectedIdx = 0
@@ -79,8 +92,10 @@ class AudioCoreSpec
               processed += dut.exposed.toBytesIn.bits.peekInt()
             }
             // Timing not important here. We just want expected for the waveform
-            expectedIdx =
-              math.min(math.max(dut.helper.sampleCntr.peekInt().toInt, 0), samples.length - 1)
+            expectedIdx = math.min(
+              math.max(dut.helper.sampleCntr.peekInt().toInt, 0),
+              samples.length - 1
+            )
             dut.expected.sampleRead.poke(samples(expectedIdx))
             dut.expected.sampleWrite.poke(expected(expectedIdx))
             dut.clock.step()
@@ -99,7 +114,10 @@ class AudioCoreSpec
           s"processed.length =/= samples.length. ${processed.length} =/= ${samples.length}"
         )
         for (((got, exp), i) <- processed.zip(expected).zipWithIndex)
-          assert(got == exp, s"@$i: got $got expected $exp (in=${samples(math.max(i,0))})")
-    }
+          assert(
+            got == exp,
+            s"@$i: got $got expected $exp (in=${samples(math.max(i, 0))})"
+          )
+      }
   }
 }
