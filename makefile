@@ -20,6 +20,12 @@ activate:  # run the echoed command
 playback:
 	python scripts/serial_send.py $(port) -b $(baud) -r $(sampleRate) --recv play
 
+hex:
+	python scripts/serial_send.py $(port) -b $(baud) -r $(sampleRate) --recv hex
+
+test_audio:
+	python scripts/serial_recv.py -m tone --freq 1000
+
 devices:
 	python scripts/serial_send.py --list-devices
 

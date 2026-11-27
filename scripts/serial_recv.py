@@ -14,6 +14,7 @@ Examples
 --------
     python scripts/serial_recv.py COM3
     python scripts/serial_recv.py COM3 --mode hex
+    python scripts/serial_recv.py -m tone --freq 1000 -d 3   # test output device
     python scripts/serial_recv.py 3 --baud 2000000 --rate 16000 --bits 8
     python scripts/serial_send.py COM3 --recv play      # send + receive
 
@@ -44,8 +45,10 @@ from serial_send import (
     normalize_port,
 )
 
-MODES = ("play", "hex")
+MODES = ("play", "hex", "tone")
 HEX_ROW = 16
+TONE_AMPLITUDE = 0.5  # fraction of full scale
+TONE_CHUNK_S = 0.01   # generator wake-up period
 
 
 class Receiver:
@@ -97,7 +100,7 @@ class Receiver:
         return n - n % self.bytes_per_sample
 
     def start(self) -> None:
-        if self.mode != "play":
+        if self.mode == "hex":
             return
         self.stream = sd.OutputStream(
             samplerate=self.rate,
@@ -186,7 +189,7 @@ class Receiver:
 
     def summary(self) -> str:
         s = f"Received {self.bytes_received / 1024:.1f} KiB"
-        if self.mode == "play":
+        if self.mode != "hex":
             s += f", {self.underruns} underruns, {self.overflows} overflows, {self.xruns} xruns"
         return s + "."
 
@@ -206,7 +209,37 @@ def reader_loop(ser, receiver: Receiver, stop: threading.Event) -> None:
         receiver.feed(data)
 
 
+def encode_pcm(samples: np.ndarray, bits: int) -> bytes:
+    """Float samples in [-1, 1] -> wire bytes, same format the FPGA sends."""
+    if bits == 8:
+        return np.clip(samples * 128.0 + 128.0, 0, 255).astype(np.uint8).tobytes()
+    return np.clip(samples * 32767.0, -32768, 32767).astype("<i2").tobytes()
+
+
+def tone_loop(
+    receiver: Receiver, freq: float, rate: int, bits: int, stop: threading.Event
+) -> None:
+    """Feed a real-time sine into ``receiver`` as if it came off the UART.
+
+    Exercises decode, jitter buffer and the output device without a port.
+    """
+    phase = 0.0
+    step = 2.0 * np.pi * freq / rate
+    sent = 0
+    t0 = time.monotonic()
+    while not stop.is_set():
+        due = int((time.monotonic() - t0) * rate) - sent
+        if due > 0:
+            t = phase + step * np.arange(due)
+            phase = float((t[-1] + step) % (2.0 * np.pi))
+            receiver.feed(encode_pcm(TONE_AMPLITUDE * np.sin(t), bits))
+            sent += due
+        time.sleep(TONE_CHUNK_S)
+
+
 def run(args: argparse.Namespace) -> int:
+    if args.mode == "tone":
+        return run_tone(args)
     port = normalize_port(args.port)
     bytes_per_sample = 1 if args.bits == 8 else 2
     wire_bps = args.rate * bytes_per_sample * BITS_PER_BYTE_ON_WIRE
@@ -273,6 +306,51 @@ def run(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_tone(args: argparse.Namespace) -> int:
+    receiver = Receiver(
+        "tone",
+        rate=args.rate,
+        bits=args.bits,
+        gain=args.gain,
+        max_latency=args.max_latency,
+        block=args.block,
+        device=args.device,
+    )
+    stop = threading.Event()
+    gen = threading.Thread(
+        target=tone_loop,
+        args=(receiver, args.freq, args.rate, args.bits, stop),
+        name="tone-gen",
+        daemon=True,
+    )
+    dev = args.device if args.device is not None else "default device"
+    print(f"{args.freq:g} Hz test tone, {args.rate} Hz {args.bits}-bit -> {dev}")
+    print("No serial port used. Ctrl-C to stop.\n")
+
+    started = time.monotonic()
+    try:
+        receiver.start()
+        gen.start()
+        while True:
+            time.sleep(0.25)
+            sys.stdout.write("\r" + receiver.status() + "   ")
+            sys.stdout.flush()
+    except KeyboardInterrupt:
+        pass
+    except sd.PortAudioError as exc:
+        print(f"\nerror: audio device: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        stop.set()
+        if gen.is_alive():
+            gen.join(timeout=1.0)
+        receiver.stop()
+
+    elapsed = time.monotonic() - started
+    print(f"\n\n{receiver.summary()} ({elapsed:.1f} s)")
+    return 0
+
+
 def parse_args(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Receive audio from a UART port and play it, or dump the bytes.",
@@ -288,7 +366,11 @@ def parse_args(argv=None) -> argparse.Namespace:
         "--mode",
         choices=MODES,
         default="play",
-        help="play = decode and play audio, hex = print received bytes",
+        help="play = decode and play audio, hex = print received bytes, "
+        "tone = play a generated sine through the same path (no port needed)",
+    )
+    parser.add_argument(
+        "--freq", type=float, default=440.0, help="test tone frequency in Hz (tone mode)"
     )
     parser.add_argument(
         "-b", "--baud", type=int, default=DEFAULT_BAUD, help="baud rate"
@@ -342,7 +424,7 @@ def main(argv=None) -> int:
     if args.list_devices:
         list_devices()
         return 0
-    if not args.port:
+    if not args.port and args.mode != "tone":
         print("error: no port given. Try --list-ports. For help -h", file=sys.stderr)
         return 2
     return run(args)
