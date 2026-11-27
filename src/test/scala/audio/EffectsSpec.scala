@@ -88,34 +88,32 @@ class DelaySpec extends AudioEffectSpec {
       new Delay(delaySamples = delaySamples),
       wave = true
     ) { dut =>
-      val emptyDelaySamples = Seq.fill(delaySamples)(0)
       val samples =
         Seq(9, 8, 7, 6, 5, 4, 3, 2, 1) // we want to send these samples
-      val samplesSInt = (samples ++ emptyDelaySamples).map(
+      val samplesSInt = samples.map(
         _.S
       ) // we want to empty the delay line so we add extra empty samples
       val expected =
-        emptyDelaySamples ++ samples // we expect the delay line to be emptied in the start
+        samples // we expect the delay line to be emptied in the start
       val expectedSInt = expected.map(_.S)
 
       enqDeqExpect(samplesSInt, expectedSInt, dut)
     }
   }
   it should "delay samples explicit simple" in {
-    val delaySamples = 2
+    val delaySamples = 2  // do not change
     testEffect(
       new Delay(delaySamples = delaySamples),
       wave=true
     ) { dut =>
-      val emptyDelaySamples = Seq.fill(delaySamples)(0)
-      dut.in.enqueue(1.S)
-      for (i <- 0 until delaySamples) {
-        dut.out.expectDequeue(0.S)
-        dut.in.enqueue(0.S)
-      }
-      dut.out.expectDequeue(1.S)
-      dut.in.enqueue(0.S)
-      dut.out.expectDequeue(0.S)
+      dut.in.enqueue(9.S)
+      dut.in.enqueue(8.S)
+      dut.in.enqueue(7.S)
+      dut.out.expectDequeue(9.S)
+      dut.in.enqueue(6.S)
+      dut.out.expectDequeue(8.S)
+      dut.in.enqueue(5.S)
+      dut.out.expectDequeueSeq(Seq(7,6,5).map(_.S))
     }
   }
 }

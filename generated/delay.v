@@ -528,71 +528,254 @@ end // initial
 `endif
 `endif // SYNTHESIS
 endmodule
-module Saturate(
+module MemFifo(
   input         clock,
   input         reset,
-  output        in_ready, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 26:14]
-  input         in_valid, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 26:14]
-  input  [15:0] in_bits, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 26:14]
-  input         out_ready, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 27:15]
-  output        out_valid, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 27:15]
-  output [15:0] out_bits, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 27:15]
-  input  [7:0]  switches_gain // @[\\src\\main\\scala\\audio\\AudioEffect.scala 28:20]
+  output        io_enq_ready, // @[src/main/scala/chisel/lib/fifo/Fifo.scala 21:14]
+  input         io_enq_valid, // @[src/main/scala/chisel/lib/fifo/Fifo.scala 21:14]
+  input  [15:0] io_enq_bits, // @[src/main/scala/chisel/lib/fifo/Fifo.scala 21:14]
+  input         io_deq_ready, // @[src/main/scala/chisel/lib/fifo/Fifo.scala 21:14]
+  output        io_deq_valid, // @[src/main/scala/chisel/lib/fifo/Fifo.scala 21:14]
+  output [15:0] io_deq_bits // @[src/main/scala/chisel/lib/fifo/Fifo.scala 21:14]
 );
-`ifdef RANDOMIZE_REG_INIT
-  reg [31:0] _RAND_0;
+`ifdef RANDOMIZE_GARBAGE_ASSIGN
   reg [31:0] _RAND_1;
+`endif // RANDOMIZE_GARBAGE_ASSIGN
+`ifdef RANDOMIZE_MEM_INIT
+  reg [31:0] _RAND_0;
+`endif // RANDOMIZE_MEM_INIT
+`ifdef RANDOMIZE_REG_INIT
   reg [31:0] _RAND_2;
   reg [31:0] _RAND_3;
+  reg [31:0] _RAND_4;
+  reg [31:0] _RAND_5;
+  reg [31:0] _RAND_6;
+  reg [31:0] _RAND_7;
+  reg [31:0] _RAND_8;
+  reg [31:0] _RAND_9;
 `endif // RANDOMIZE_REG_INIT
-  reg  busy; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 30:21]
-  reg  validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:25]
-  reg [15:0] sampleOut; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 32:22]
-  wire  start = in_ready & in_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
-  reg  doneReg; // @[\\src\\main\\scala\\audio\\Effects.scala 28:24]
-  wire  _T_5 = out_ready & out_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
-  wire  _GEN_0 = _T_5 ? 1'h0 : validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 53:24 55:14 31:25]
-  wire  _GEN_1 = doneReg ? 1'h0 : busy; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 49:20 51:10 30:21]
-  wire  _GEN_2 = doneReg | _GEN_0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 49:20 52:14]
-  wire  _GEN_3 = start | _GEN_1; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 46:15 48:10]
-  wire  isNeg = in_bits[15]; // @[\\src\\main\\scala\\audio\\Effects.scala 20:23]
-  wire [15:0] _GEN_9 = {{8{switches_gain[7]}},switches_gain}; // @[\\src\\main\\scala\\audio\\Effects.scala 23:25]
-  wire [16:0] _gainedSample_T = $signed(in_bits) - $signed(_GEN_9); // @[\\src\\main\\scala\\audio\\Effects.scala 23:25]
-  wire [16:0] _gainedSample_T_1 = $signed(in_bits) + $signed(_GEN_9); // @[\\src\\main\\scala\\audio\\Effects.scala 23:45]
-  wire [16:0] gainedSample = isNeg ? $signed(_gainedSample_T) : $signed(_gainedSample_T_1); // @[\\src\\main\\scala\\audio\\Effects.scala 23:8]
-  wire [16:0] _GEN_5 = $signed(gainedSample) <= -17'sh6000 ? $signed(-17'sh6000) : $signed(gainedSample); // @[\\src\\main\\scala\\utils\\Helper.scala 21:51 22:23 24:23]
-  wire [16:0] saturatedSample = $signed(gainedSample) >= 17'sh6000 ? $signed(17'sh6000) : $signed(_GEN_5); // @[\\src\\main\\scala\\utils\\Helper.scala 19:42 20:23]
-  wire [16:0] _GEN_8 = start ? $signed(saturatedSample) : $signed({{1{sampleOut[15]}},sampleOut}); // @[\\src\\main\\scala\\audio\\Effects.scala 30:15 32:15 \\src\\main\\scala\\audio\\AudioEffect.scala 32:22]
-  assign in_ready = ~busy & ~validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 34:21]
-  assign out_valid = validReg; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 35:13]
-  assign out_bits = sampleOut; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 36:12]
+  reg /* sparse */ [15:0] mem [0:575163519]; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  wire  mem_data_MPORT_en; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  wire [29:0] mem_data_MPORT_addr; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  wire [15:0] mem_data_MPORT_data; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  wire [15:0] mem_MPORT_data; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  wire [29:0] mem_MPORT_addr; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  wire  mem_MPORT_mask; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  wire  mem_MPORT_en; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  reg  mem_data_MPORT_en_pipe_0;
+  reg [29:0] mem_data_MPORT_addr_pipe_0;
+  reg [29:0] readPtr; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 16:25]
+  wire [29:0] _nextVal_T_2 = readPtr + 30'h1; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 17:61]
+  wire [29:0] nextRead = readPtr == 30'h22484c7f ? 30'h0 : _nextVal_T_2; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 17:22]
+  reg  outputValidReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 35:31]
+  reg [29:0] writePtr; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 16:25]
+  wire  _readCond_T_1 = readPtr != writePtr; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 50:34]
+  reg  fullReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 32:24]
+  wire  readCond = ~outputValidReg & (readPtr != writePtr | fullReg); // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 50:21]
+  wire [29:0] _nextVal_T_5 = writePtr + 30'h1; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 17:61]
+  wire [29:0] nextWrite = writePtr == 30'h22484c7f ? 30'h0 : _nextVal_T_5; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 17:22]
+  wire  incrWrite = io_enq_ready & io_enq_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
+  reg  emptyReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 31:25]
+  reg [15:0] outputReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 34:22]
+  wire  _io_enq_ready_T = ~fullReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 39:19]
+  wire [15:0] data = mem_data_MPORT_data; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 42:18 43:8]
+  wire  _GEN_13 = readCond | outputValidReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 51:18 55:20 35:31]
+  wire  _GEN_14 = readCond ? nextRead == writePtr : emptyReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 51:18 56:14 31:25]
+  wire  _T = io_deq_ready & io_deq_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 57:35]
+  wire  _GEN_17 = incrWrite ? 1'h0 : _GEN_14; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 64:21 65:14]
+  wire [29:0] fullNr = fullReg ? 30'h22484c80 : 30'h0; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 72:19]
+  wire [29:0] _number_T_1 = writePtr - readPtr; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 73:25]
+  wire [29:0] number = _number_T_1 + fullNr; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 73:35]
+  wire  _T_4 = ~reset; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 74:9]
+  wire  _T_27 = ~(readPtr == writePtr); // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 85:11]
+  wire  _GEN_22 = _readCond_T_1 & _T_4; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 80:11]
+  assign mem_data_MPORT_en = mem_data_MPORT_en_pipe_0;
+  assign mem_data_MPORT_addr = mem_data_MPORT_addr_pipe_0;
+  `ifndef RANDOMIZE_GARBAGE_ASSIGN
+  assign mem_data_MPORT_data = mem[mem_data_MPORT_addr]; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  `else
+  assign mem_data_MPORT_data = mem_data_MPORT_addr >= 30'h22484c80 ? _RAND_1[15:0] : mem[mem_data_MPORT_addr]; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
+  `endif // RANDOMIZE_GARBAGE_ASSIGN
+  assign mem_MPORT_data = io_enq_bits;
+  assign mem_MPORT_addr = writePtr;
+  assign mem_MPORT_mask = 1'h1;
+  assign mem_MPORT_en = io_enq_ready & io_enq_valid;
+  assign io_enq_ready = ~fullReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 39:19]
+  assign io_deq_valid = outputValidReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 38:16]
+  assign io_deq_bits = outputReg; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 62:15]
   always @(posedge clock) begin
-    if (reset) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 30:21]
-      busy <= 1'h0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 30:21]
-    end else begin
-      busy <= _GEN_3;
+    if (mem_MPORT_en & mem_MPORT_mask) begin
+      mem[mem_MPORT_addr] <= mem_MPORT_data; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 24:24]
     end
-    if (reset) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:25]
-      validReg <= 1'h0; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 31:25]
-    end else if (!(start)) begin // @[\\src\\main\\scala\\audio\\AudioEffect.scala 46:15]
-      validReg <= _GEN_2;
+    mem_data_MPORT_en_pipe_0 <= 1'h1;
+    if (1'h1) begin
+      mem_data_MPORT_addr_pipe_0 <= readPtr;
     end
-    sampleOut <= _GEN_8[15:0];
-    if (reset) begin // @[\\src\\main\\scala\\audio\\Effects.scala 28:24]
-      doneReg <= 1'h0; // @[\\src\\main\\scala\\audio\\Effects.scala 28:24]
+    if (reset) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 16:25]
+      readPtr <= 30'h0; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 16:25]
+    end else if (readCond) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 18:16]
+      if (readPtr == 30'h22484c7f) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 17:22]
+        readPtr <= 30'h0;
+      end else begin
+        readPtr <= _nextVal_T_2;
+      end
+    end
+    if (reset) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 35:31]
+      outputValidReg <= 1'h0; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 35:31]
+    end else if (_T) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 59:21]
+      outputValidReg <= 1'h0; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 60:20]
     end else begin
-      doneReg <= start;
+      outputValidReg <= _GEN_13;
+    end
+    if (reset) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 16:25]
+      writePtr <= 30'h0; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 16:25]
+    end else if (incrWrite) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 18:16]
+      if (writePtr == 30'h22484c7f) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 17:22]
+        writePtr <= 30'h0;
+      end else begin
+        writePtr <= _nextVal_T_5;
+      end
+    end
+    if (reset) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 32:24]
+      fullReg <= 1'h0; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 32:24]
+    end else if (incrWrite) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 64:21]
+      fullReg <= nextWrite == readPtr & ~readCond; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 66:13]
+    end else if (readCond) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 51:18]
+      fullReg <= 1'h0; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 57:13]
+    end
+    emptyReg <= reset | _GEN_17; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 31:{25,25}]
+    if (readCond) begin // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 51:18]
+      outputReg <= data; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 54:15]
     end
     `ifndef SYNTHESIS
     `ifdef PRINTF_COND
       if (`PRINTF_COND) begin
     `endif
-        if (~reset & ~(~(start & doneReg))) begin
-          $fwrite(32'h80000002,
-            "Assumption failed: start and done must not both be high\n    at AudioEffect.scala:44 assume(!(start && done), \"start and done must not both be high\")\n"
-            ); // @[\\src\\main\\scala\\audio\\AudioEffect.scala 44:9]
+        if (_T_4 & ~(number < 30'h22484c81)) begin
+          $fwrite(32'h80000002,"Assertion failed\n    at MemFifo.scala:75 assert(number < (depth + 1).U)\n"); // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 75:9]
         end
     `ifdef PRINTF_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef STOP_COND
+      if (`STOP_COND) begin
+    `endif
+        if (_T_4 & ~(number < 30'h22484c81)) begin
+          $fatal; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 75:9]
+        end
+    `ifdef STOP_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef PRINTF_COND
+      if (`PRINTF_COND) begin
+    `endif
+        if (_T_4 & ~(~(emptyReg & fullReg))) begin
+          $fwrite(32'h80000002,"Assertion failed\n    at MemFifo.scala:77 assert(!(emptyReg && fullReg))\n"); // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 77:9]
+        end
+    `ifdef PRINTF_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef STOP_COND
+      if (`STOP_COND) begin
+    `endif
+        if (_T_4 & ~(~(emptyReg & fullReg))) begin
+          $fatal; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 77:9]
+        end
+    `ifdef STOP_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef PRINTF_COND
+      if (`PRINTF_COND) begin
+    `endif
+        if (_readCond_T_1 & _T_4 & ~(~emptyReg)) begin
+          $fwrite(32'h80000002,"Assertion failed\n    at MemFifo.scala:80 assert(emptyReg === false.B)\n"); // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 80:11]
+        end
+    `ifdef PRINTF_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef STOP_COND
+      if (`STOP_COND) begin
+    `endif
+        if (_readCond_T_1 & _T_4 & ~(~emptyReg)) begin
+          $fatal; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 80:11]
+        end
+    `ifdef STOP_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef PRINTF_COND
+      if (`PRINTF_COND) begin
+    `endif
+        if (_GEN_22 & ~_io_enq_ready_T) begin
+          $fwrite(32'h80000002,"Assertion failed\n    at MemFifo.scala:81 assert(fullReg === false.B)\n"); // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 81:11]
+        end
+    `ifdef PRINTF_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef STOP_COND
+      if (`STOP_COND) begin
+    `endif
+        if (_GEN_22 & ~_io_enq_ready_T) begin
+          $fatal; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 81:11]
+        end
+    `ifdef STOP_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef PRINTF_COND
+      if (`PRINTF_COND) begin
+    `endif
+        if (fullReg & _T_4 & ~(readPtr == writePtr)) begin
+          $fwrite(32'h80000002,"Assertion failed\n    at MemFifo.scala:85 assert(readPtr === writePtr)\n"); // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 85:11]
+        end
+    `ifdef PRINTF_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef STOP_COND
+      if (`STOP_COND) begin
+    `endif
+        if (fullReg & _T_4 & ~(readPtr == writePtr)) begin
+          $fatal; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 85:11]
+        end
+    `ifdef STOP_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef PRINTF_COND
+      if (`PRINTF_COND) begin
+    `endif
+        if (emptyReg & _T_4 & _T_27) begin
+          $fwrite(32'h80000002,"Assertion failed\n    at MemFifo.scala:89 assert(readPtr === writePtr)\n"); // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 89:11]
+        end
+    `ifdef PRINTF_COND
+      end
+    `endif
+    `endif // SYNTHESIS
+    `ifndef SYNTHESIS
+    `ifdef STOP_COND
+      if (`STOP_COND) begin
+    `endif
+        if (emptyReg & _T_4 & _T_27) begin
+          $fatal; // @[src/main/scala/chisel/lib/fifo/MemFifo.scala 89:11]
+        end
+    `ifdef STOP_COND
       end
     `endif
     `endif // SYNTHESIS
@@ -632,15 +815,31 @@ initial begin
         #0.002 begin end
       `endif
     `endif
-`ifdef RANDOMIZE_REG_INIT
-  _RAND_0 = {1{`RANDOM}};
-  busy = _RAND_0[0:0];
+`ifdef RANDOMIZE_GARBAGE_ASSIGN
   _RAND_1 = {1{`RANDOM}};
-  validReg = _RAND_1[0:0];
+`endif // RANDOMIZE_GARBAGE_ASSIGN
+`ifdef RANDOMIZE_MEM_INIT
+  _RAND_0 = {1{`RANDOM}};
+  for (initvar = 0; initvar < 575163520; initvar = initvar+1)
+    mem[initvar] = _RAND_0[15:0];
+`endif // RANDOMIZE_MEM_INIT
+`ifdef RANDOMIZE_REG_INIT
   _RAND_2 = {1{`RANDOM}};
-  sampleOut = _RAND_2[15:0];
+  mem_data_MPORT_en_pipe_0 = _RAND_2[0:0];
   _RAND_3 = {1{`RANDOM}};
-  doneReg = _RAND_3[0:0];
+  mem_data_MPORT_addr_pipe_0 = _RAND_3[29:0];
+  _RAND_4 = {1{`RANDOM}};
+  readPtr = _RAND_4[29:0];
+  _RAND_5 = {1{`RANDOM}};
+  outputValidReg = _RAND_5[0:0];
+  _RAND_6 = {1{`RANDOM}};
+  writePtr = _RAND_6[29:0];
+  _RAND_7 = {1{`RANDOM}};
+  fullReg = _RAND_7[0:0];
+  _RAND_8 = {1{`RANDOM}};
+  emptyReg = _RAND_8[0:0];
+  _RAND_9 = {1{`RANDOM}};
+  outputReg = _RAND_9[15:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -649,33 +848,69 @@ end // initial
 `endif
 `endif // SYNTHESIS
 endmodule
+module Delay(
+  input         clock,
+  input         reset,
+  output        in_ready, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 25:14]
+  input         in_valid, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 25:14]
+  input  [15:0] in_bits, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 25:14]
+  input         out_ready, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 26:15]
+  output        out_valid, // @[\\src\\main\\scala\\audio\\AudioEffect.scala 26:15]
+  output [15:0] out_bits // @[\\src\\main\\scala\\audio\\AudioEffect.scala 26:15]
+);
+  wire  mem_clock; // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+  wire  mem_reset; // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+  wire  mem_io_enq_ready; // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+  wire  mem_io_enq_valid; // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+  wire [15:0] mem_io_enq_bits; // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+  wire  mem_io_deq_ready; // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+  wire  mem_io_deq_valid; // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+  wire [15:0] mem_io_deq_bits; // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+  MemFifo mem ( // @[\\src\\main\\scala\\audio\\Effects.scala 40:21]
+    .clock(mem_clock),
+    .reset(mem_reset),
+    .io_enq_ready(mem_io_enq_ready),
+    .io_enq_valid(mem_io_enq_valid),
+    .io_enq_bits(mem_io_enq_bits),
+    .io_deq_ready(mem_io_deq_ready),
+    .io_deq_valid(mem_io_deq_valid),
+    .io_deq_bits(mem_io_deq_bits)
+  );
+  assign in_ready = mem_io_enq_ready; // @[\\src\\main\\scala\\audio\\Effects.scala 41:16]
+  assign out_valid = mem_io_deq_valid; // @[\\src\\main\\scala\\audio\\Effects.scala 42:9]
+  assign out_bits = mem_io_deq_bits; // @[\\src\\main\\scala\\audio\\Effects.scala 42:9]
+  assign mem_clock = clock;
+  assign mem_reset = reset;
+  assign mem_io_enq_valid = in_valid; // @[\\src\\main\\scala\\audio\\Effects.scala 41:16]
+  assign mem_io_enq_bits = in_bits; // @[\\src\\main\\scala\\audio\\Effects.scala 41:16]
+  assign mem_io_deq_ready = out_ready; // @[\\src\\main\\scala\\audio\\Effects.scala 42:9]
+endmodule
 module AudioCore(
   input        clock,
   input        reset,
-  output       io_rx_ready, // @[\\src\\main\\scala\\top\\AudioCore.scala 13:14]
-  input        io_rx_valid, // @[\\src\\main\\scala\\top\\AudioCore.scala 13:14]
-  input  [7:0] io_rx_bits, // @[\\src\\main\\scala\\top\\AudioCore.scala 13:14]
-  input        io_tx_ready, // @[\\src\\main\\scala\\top\\AudioCore.scala 13:14]
-  output       io_tx_valid, // @[\\src\\main\\scala\\top\\AudioCore.scala 13:14]
-  output [7:0] io_tx_bits, // @[\\src\\main\\scala\\top\\AudioCore.scala 13:14]
-  input  [7:0] io_sw_gain // @[\\src\\main\\scala\\top\\AudioCore.scala 13:14]
+  output       io_rx_ready, // @[\\src\\main\\scala\\top\\AudioCore.scala 15:14]
+  input        io_rx_valid, // @[\\src\\main\\scala\\top\\AudioCore.scala 15:14]
+  input  [7:0] io_rx_bits, // @[\\src\\main\\scala\\top\\AudioCore.scala 15:14]
+  input        io_tx_ready, // @[\\src\\main\\scala\\top\\AudioCore.scala 15:14]
+  output       io_tx_valid, // @[\\src\\main\\scala\\top\\AudioCore.scala 15:14]
+  output [7:0] io_tx_bits // @[\\src\\main\\scala\\top\\AudioCore.scala 15:14]
 );
-  wire  toSamples_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire  toSamples_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire  toSamples_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire  toSamples_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire [7:0] toSamples_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire  toSamples_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire  toSamples_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire [15:0] toSamples_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
-  wire  toBytes_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
-  wire  toBytes_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
-  wire  toBytes_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
-  wire  toBytes_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
-  wire [15:0] toBytes_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
-  wire  toBytes_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
-  wire  toBytes_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
-  wire [7:0] toBytes_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
+  wire  toSamples_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
+  wire  toSamples_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
+  wire  toSamples_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
+  wire  toSamples_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
+  wire [7:0] toSamples_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
+  wire  toSamples_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
+  wire  toSamples_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
+  wire [15:0] toSamples_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
+  wire  toBytes_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
+  wire  toBytes_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
+  wire  toBytes_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
+  wire  toBytes_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
+  wire [15:0] toBytes_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
+  wire  toBytes_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
+  wire  toBytes_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
+  wire [7:0] toBytes_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
   wire  toSamples_in_q_clock; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire  toSamples_in_q_reset; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire  toSamples_in_q_io_enq_ready; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
@@ -684,16 +919,15 @@ module AudioCore(
   wire  toSamples_in_q_io_deq_ready; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire  toSamples_in_q_io_deq_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire [7:0] toSamples_in_q_io_deq_bits; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
-  wire  sat_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  wire  sat_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  wire  sat_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  wire  sat_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  wire [15:0] sat_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  wire  sat_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  wire  sat_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  wire [15:0] sat_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  wire [7:0] sat_switches_gain; // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-  BytesToSample toSamples ( // @[\\src\\main\\scala\\top\\AudioCore.scala 20:25]
+  wire  effect1_clock; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+  wire  effect1_reset; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+  wire  effect1_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+  wire  effect1_in_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+  wire [15:0] effect1_in_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+  wire  effect1_out_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+  wire  effect1_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+  wire [15:0] effect1_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+  BytesToSample toSamples ( // @[\\src\\main\\scala\\top\\AudioCore.scala 23:25]
     .clock(toSamples_clock),
     .reset(toSamples_reset),
     .in_ready(toSamples_in_ready),
@@ -703,7 +937,7 @@ module AudioCore(
     .out_valid(toSamples_out_valid),
     .out_bits(toSamples_out_bits)
   );
-  SamplesToBytes toBytes ( // @[\\src\\main\\scala\\top\\AudioCore.scala 21:23]
+  SamplesToBytes toBytes ( // @[\\src\\main\\scala\\top\\AudioCore.scala 24:23]
     .clock(toBytes_clock),
     .reset(toBytes_reset),
     .in_ready(toBytes_in_ready),
@@ -723,41 +957,39 @@ module AudioCore(
     .io_deq_valid(toSamples_in_q_io_deq_valid),
     .io_deq_bits(toSamples_in_q_io_deq_bits)
   );
-  Saturate sat ( // @[\\src\\main\\scala\\top\\AudioCore.scala 25:29]
-    .clock(sat_clock),
-    .reset(sat_reset),
-    .in_ready(sat_in_ready),
-    .in_valid(sat_in_valid),
-    .in_bits(sat_in_bits),
-    .out_ready(sat_out_ready),
-    .out_valid(sat_out_valid),
-    .out_bits(sat_out_bits),
-    .switches_gain(sat_switches_gain)
+  Delay effect1 ( // @[\\src\\main\\scala\\top\\AudioCore.scala 30:30]
+    .clock(effect1_clock),
+    .reset(effect1_reset),
+    .in_ready(effect1_in_ready),
+    .in_valid(effect1_in_valid),
+    .in_bits(effect1_in_bits),
+    .out_ready(effect1_out_ready),
+    .out_valid(effect1_out_valid),
+    .out_bits(effect1_out_bits)
   );
   assign io_rx_ready = toSamples_in_q_io_enq_ready; // @[src/main/scala/chisel3/util/Decoupled.scala 385:17]
-  assign io_tx_valid = toBytes_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:15]
-  assign io_tx_bits = toBytes_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:15]
+  assign io_tx_valid = toBytes_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 40:15]
+  assign io_tx_bits = toBytes_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 40:15]
   assign toSamples_clock = clock;
   assign toSamples_reset = reset;
-  assign toSamples_in_valid = toSamples_in_q_io_deq_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:16]
-  assign toSamples_in_bits = toSamples_in_q_io_deq_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:16]
-  assign toSamples_out_ready = sat_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:10]
+  assign toSamples_in_valid = toSamples_in_q_io_deq_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 26:16]
+  assign toSamples_in_bits = toSamples_in_q_io_deq_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 26:16]
+  assign toSamples_out_ready = effect1_in_ready; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 108:19]
   assign toBytes_clock = clock;
   assign toBytes_reset = reset;
-  assign toBytes_in_valid = sat_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 28:14]
-  assign toBytes_in_bits = sat_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 28:14]
-  assign toBytes_out_ready = io_tx_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 30:15]
+  assign toBytes_in_valid = effect1_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 39:14]
+  assign toBytes_in_bits = effect1_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 39:14]
+  assign toBytes_out_ready = io_tx_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 40:15]
   assign toSamples_in_q_clock = clock;
   assign toSamples_in_q_reset = reset;
   assign toSamples_in_q_io_enq_valid = io_rx_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 383:22]
   assign toSamples_in_q_io_enq_bits = io_rx_bits; // @[src/main/scala/chisel3/util/Decoupled.scala 384:21]
-  assign toSamples_in_q_io_deq_ready = toSamples_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 23:16]
-  assign sat_clock = clock;
-  assign sat_reset = reset;
-  assign sat_in_valid = toSamples_out_valid; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:10]
-  assign sat_in_bits = toSamples_out_bits; // @[\\src\\main\\scala\\top\\AudioCore.scala 27:10]
-  assign sat_out_ready = toBytes_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 28:14]
-  assign sat_switches_gain = io_sw_gain; // @[\\src\\main\\scala\\top\\AudioCore.scala 26:16]
+  assign toSamples_in_q_io_deq_ready = toSamples_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 26:16]
+  assign effect1_clock = clock;
+  assign effect1_reset = reset;
+  assign effect1_in_valid = toSamples_out_valid; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 108:19]
+  assign effect1_in_bits = toSamples_out_bits; // @[\\src\\main\\scala\\audio\\AudioEffect.scala 108:19]
+  assign effect1_out_ready = toBytes_in_ready; // @[\\src\\main\\scala\\top\\AudioCore.scala 39:14]
 endmodule
 module Queue_1(
   input        clock,
@@ -907,7 +1139,6 @@ module Top(
   wire  core_io_tx_ready; // @[\\src\\main\\scala\\top\\Top.scala 35:20]
   wire  core_io_tx_valid; // @[\\src\\main\\scala\\top\\Top.scala 35:20]
   wire [7:0] core_io_tx_bits; // @[\\src\\main\\scala\\top\\Top.scala 35:20]
-  wire [7:0] core_io_sw_gain; // @[\\src\\main\\scala\\top\\Top.scala 35:20]
   wire  core_io_rx_q_clock; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire  core_io_rx_q_reset; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
   wire  core_io_rx_q_io_enq_ready; // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
@@ -940,8 +1171,7 @@ module Top(
     .io_rx_bits(core_io_rx_bits),
     .io_tx_ready(core_io_tx_ready),
     .io_tx_valid(core_io_tx_valid),
-    .io_tx_bits(core_io_tx_bits),
-    .io_sw_gain(core_io_sw_gain)
+    .io_tx_bits(core_io_tx_bits)
   );
   Queue_1 core_io_rx_q ( // @[src/main/scala/chisel3/util/Decoupled.scala 381:21]
     .clock(core_io_rx_q_clock),
@@ -967,7 +1197,6 @@ module Top(
   assign core_io_rx_valid = core_io_rx_q_io_deq_valid; // @[\\src\\main\\scala\\top\\Top.scala 38:14]
   assign core_io_rx_bits = core_io_rx_q_io_deq_bits; // @[\\src\\main\\scala\\top\\Top.scala 38:14]
   assign core_io_tx_ready = tx_io_channel_ready; // @[\\src\\main\\scala\\top\\Top.scala 39:17]
-  assign core_io_sw_gain = io_sw[7:0]; // @[\\src\\main\\scala\\top\\Top.scala 36:31]
   assign core_io_rx_q_clock = clock;
   assign core_io_rx_q_reset = reset;
   assign core_io_rx_q_io_enq_valid = rx_io_channel_valid; // @[src/main/scala/chisel3/util/Decoupled.scala 383:22]

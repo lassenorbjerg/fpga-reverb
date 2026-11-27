@@ -61,7 +61,16 @@ Spent some more time on tests. Now it is even nicer.
 ADded an enable to the effects
 - it triggers in each effect just passing through the unaltered sample, so the effects do not suddenly drop samples
 - Added AudioParam that allows you to always set en high
-- 
+
+Used MemFifo
+- Used from ip contributions 
+- Works
+- Had to allow the audioeffects to just connect to the decoupled io of the memfifo
+  - makes life easier honestly
+    - > Maybe I should actually just have it be decoupledIO instead of start done
+
+## back of envelope calcs:
+
 
 # 0.3.1 - Remove Delay
 

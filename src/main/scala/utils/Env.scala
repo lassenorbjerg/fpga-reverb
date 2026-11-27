@@ -40,5 +40,6 @@ object Env {
   val BaudRate: Int = 921_600 // bits/s
   val sampleRate: Int = 44_100 // Hz
 
-  val msDelay: Int = 20
+  val msDelay: Int = 500
 }
+

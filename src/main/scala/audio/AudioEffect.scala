@@ -16,17 +16,31 @@ import utils._
   *   - out.valid may depend on in.valid, never on out.ready.
   *   - Stall with ready instead of dropping samples.
   * Contract:
-  *   - Begin processing the sample when `start` pulses
-  *   - Pulse `done` high when processing is done
-  *   - sampleIn will have a valid sample when `start` is high
-  *   - sampleOut should be valid when `done` is high
-  *   - sampleOut should be sampleIn when switches.en=1
+  *   - switches.en must send the sample unaltered to sampleOut
+  *   - in and out handshakes must be respected
+  * Notes: `StartDoneEffect` extends `AudioEffect`. It implements a Start/Done handshake
   */
 abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
   val in = IO(Flipped(Decoupled(params.sample)))
   val out = IO(Decoupled(params.sample))
   val switches = IO(Input(new Switches))
+
+}
+
+/** Read AudioEffect docs for additional info.
+  * 
+  * Contract:
+  *   - Begin processing the sample when `start` pulses
+  *   - Pulse `done` high when processing is done
+  *   - sampleIn will have a valid sample when `start` is high
+  *   - sampleOut should be valid when `done` is high
+  *   - sampleOut should be sampleIn when switches.en=1
+  *
+  * @param params
+  */
+abstract class StartDoneEffect()(implicit params: AudioParams)
+    extends AudioEffect() {
 
   val busy = RegInit(false.B)
   val validReg = RegInit(false.B)
