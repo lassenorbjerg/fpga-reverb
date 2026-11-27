@@ -73,6 +73,32 @@ Rewrote AudioEffects
 That is the saturation lol
 Implementation works but test was wrong 
 
+Ok. So implementation was slightly wrong because it double sent samples. Therefore first 0s were doubly sent. Therefore the delay.
+- rework of handshake in audioeffects was done
+- subclasses set done and start work when start is high
+
+>  * Contract:
+>  *   - Begin processing the sample when `start` pulses
+>  *   - Pulse `done` high when processing is done
+>  *   - sampleIn will have a valid sample when `start` is high
+>  *   - sampleOut should be valid when `done` is high
+>  *   - done=1 && start=1 is not allowed
+
+This forced me to delay by a cycle. There are ways probably to have it be one cycle. But for now it is fine. It just needs to work.
+
+The saturate effect just does this then
+```
+  val doneReg = RegInit(false.B)
+
+  when(start) {
+    doneReg := 1.B
+    sampleOut := saturatedSample
+  }.otherwise {
+    done := 0.B
+  }
+  done := doneReg
+```
+
 # 0.3.0 - Create Delay*
 
 In a way we did create the delay. Although unintentional.
