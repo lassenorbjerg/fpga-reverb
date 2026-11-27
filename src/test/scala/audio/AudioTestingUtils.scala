@@ -86,3 +86,24 @@ object UartUtils {
     (p.clockFreq.toDouble / p.baudRate).toInt // should it be ceiled?
   }
 }
+
+// object DecoupledUtils {
+//   /**
+//     * E.g. rx
+//     *
+//     * @param dut
+//     * @param source: Input E.g. rx
+//     */
+//   def setupSource(dut: Module, source: DecoupledIO[Any]): Unit = {
+//     source.initSource().setSourceClock(dut.clock)
+//   }
+//   /**
+//     * E.g. tx
+//     *
+//     * @param dut
+//     * @param sink: Output E.g. rx
+//     */
+//   def setupSink(dut: Module, sink: DecoupledIO[Any]): Unit = {
+//     sink.initSink().setSinkClock(dut.clock)
+//   }
+// }

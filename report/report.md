@@ -100,6 +100,32 @@ $$
 
 ## AI Acknowledgements
 
+### python scripts
+
+All the python scripts are completely AI generated.
+
+```
+opus 5
+
+Create a python script for sending real-time audio through uart. It should take the microphone as input. The output port should be easily configurable, so you can for example just write "COM/3".
+```
+
+```
+opus 5.5
+
+Make it so serial_send and serial_recv can run at the same time. sending audio data and then receiving and playing the audio (should also have a mode to just show the received bytes)
+```
+
+```
+make a script for debugging uart. that it sends the correct thing. start and stop bit baud rate is correct and so on. would be nice with real time, but not have it be unmanageable so. maybe i hold down a button or i say that it should be record for x amount of seconds or it could also self diagnose send some data. confirm is it correct, be like why not.
+```
+
+```
+opus 5.5
+
+Add a mode to serial_recv that tests the output device somehow
+```
+
 ### fifo_lines
 ```
 opus 5.5
@@ -231,6 +257,8 @@ fpga-reverb/
 | AudioEffect.scala | Base class: Decoupled(SInt) in/out + `chain` helper | 0.3.0 |
 | SampleCodec.scala | Bytes ↔ samples | 0.3.0 |
 ```
+
+### How to create a monitor in testbench
 
 
 ## References

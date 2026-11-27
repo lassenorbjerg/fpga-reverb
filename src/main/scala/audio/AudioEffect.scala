@@ -16,11 +16,11 @@ import utils._
   *   - out.valid may depend on in.valid, never on out.ready.
   *   - Stall with ready instead of dropping samples.
   * Contract:
-  *   - derived classes set validReg and out.bits
-  *   - when validReg=1 && out.ready=1 set validReg=0
-  *   - out.bits cannot be set while validReg=1
-  *   - sampleIn can be assumed to always have a valid sample
-  *     - in the start it will be 0
+  *   - Begin processing the sample when `start` pulses
+  *   - Pulse `done` high when processing is done
+  *   - sampleIn will have a valid sample when `start` is high
+  *   - sampleOut should be valid when `done` is high
+  *   - done=1 && start=1 is not allowed
   */
 abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   implicit val p: AudioParams = params
@@ -28,21 +28,33 @@ abstract class AudioEffect()(implicit params: AudioParams) extends Module {
   val out = IO(Decoupled(params.sample))
   val switches = IO(Input(new Switches))
 
-  val sampleIn = RegInit(0.S(params.sampleWidth.W))
+  val busy = RegInit(false.B)
+  val validReg = RegInit(false.B)
+  val sampleOut = Reg(params.sample)  // should be set by subclasses
 
-  val validReg = RegInit(false.B)  // out.valid
-  val readyReg = RegInit(false.B)  // in.ready
-  val nValidReg = !validReg
-
-  when(in.fire) {
-    sampleIn := in.bits
-    readyReg := false.B
-  }.otherwise {
-    readyReg := nValidReg  // we stall with ready while out has not been consumed
-  }
-
+  in.ready := !busy || !validReg // we are not working on a sample or we have been consumed
   out.valid := validReg
-  in.ready := readyReg
+  out.bits := sampleOut
+
+  // Subclass relevant fields
+  val start = in.fire // triggers subclasses to start processing
+  val done = WireDefault(false.B) // subclasses set when done processing
+  val sampleIn = in.bits  // sampleIn is valid when start is pulsed
+  // Subclass relevant fields
+
+  assume(!(start && done))
+
+  when(start) {
+    // we have started work
+    busy := true.B
+  }.elsewhen(done) {
+    // we have finished work and sample has been processed
+    busy := false.B
+    validReg := true.B
+  }.elsewhen(out.fire) {
+    // we have been consumed
+    validReg := false.B
+  }
 }
 
 object AudioEffect {

@@ -92,15 +92,9 @@ Pick the mic/interface as Windows default input. Use headphones (feedback).
 
 ## Run
 ```sh
-python scripts/serial_send.py COM4 -b 921600 -r 44100 --recv play   # live mic through FPGA
+python scripts/serial_send.py COM4 -b 921600 -r 44100 --recv play    # live mic through FPGA
 python scripts/serial_send.py --no-serial --recv play                # no board, loopback
 python scripts/serial_file.py COM4 audio.wav                         # file round trip
 python scripts/uart_debug.py COM4                                    # link diagnosis
 ```
-
-## Repository layout → docs/files.md
-## Report → report/report.md
-## License
-
-
 

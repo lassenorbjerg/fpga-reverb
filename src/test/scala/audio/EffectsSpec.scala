@@ -18,9 +18,14 @@ class GainSpec extends AnyFlatSpec with ChiselScalatestTester {
 }
 
 class SaturateSpec extends AnyFlatSpec with ChiselScalatestTester {
-  it should "pass" in {
-    test(new (AudioCore)) { dut =>
-      dut.clock.setTimeout(0)
+  implicit val p: AudioParams = AudioParams.test
+  it should "saturate max amplitude" in {
+    test(new Saturate(threshold=Some(p.maxAmp))).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      dut.in.initSource().setSourceClock(dut.clock)
+      dut.out.initSink().setSinkClock(dut.clock)
+      dut.switches.gain.poke(p.maxGain.S)
+      dut.in.enqueue((p.maxAmp + 20).S)
+      dut.out.expectDequeue(p.maxAmp.S)
     }
   }
 }
