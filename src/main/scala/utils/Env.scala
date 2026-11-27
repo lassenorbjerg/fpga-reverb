@@ -5,7 +5,8 @@ import chisel3.util._
 
 class Switches extends Bundle {
   // The first field declared ends up on the MSBs
-  val rest = Input(UInt(8.W))
+  val en = Input(UInt(1.W))
+  val rest = Input(UInt(7.W))
   val gain = Input(SInt(8.W))
 }
 
@@ -28,15 +29,14 @@ object Board {
 
 }
 
-
-/**
-  * Defaults for widths. As well as useful constants.
+/** Defaults for widths. As well as useful constants.
   */
 object Env {
   val sampleWidth: Int = 16 // bits per PCM sample
-  val delayDepth: Int = 4 // How many samples each delay line can hold
-  val gainWidth: Int = 8  // SInt
+  val gainWidth: Int = 8 // SInt
 
   val BaudRate: Int = 921_600 // bits/s
-  val sampleRate: Int = 48_000 // Hz
+  val sampleRate: Int = 44_100 // Hz
+
+  val msDelay: Int = 500
 }

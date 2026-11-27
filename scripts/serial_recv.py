@@ -85,6 +85,7 @@ class Receiver:
         self.prime_bytes = self._align(self.max_bytes // 2)
 
         self.buf = bytearray()
+        self.partial = b""  # trailing bytes of an incomplete sample
         self.lock = threading.Lock()
         self.priming = True
         self.stream = None
@@ -126,7 +127,12 @@ class Receiver:
             self._dump(data)
             return
         with self.lock:
-            self.buf += data
+            data = self.partial + data
+            whole = len(data) - len(data) % self.bytes_per_sample
+            self.partial = data[whole:]  # odd byte waits for its partner
+            if not whole:
+                return
+            self.buf += data[:whole]
             excess = len(self.buf) - self.max_bytes
             if excess > 0:
                 # Drop the stalest audio, keeping sample alignment.

@@ -9,20 +9,25 @@ import top.AudioCore
 
 import AudioTestingUtils._
 
-class Dummy extends Module {}
 
-
-
-class AudioTestingUtilsSpec
-    extends AnyFlatSpec
-    with ChiselScalatestTester
-    with Matchers {
+class AudioTestingUtilsSpec extends AnyFlatSpec with Matchers {
+  private val twoHzRef = Seq(0, 6393, 12539, 18204, 23170, 27245, 30273, 32137, 32767,
+    32137, 30273, 27245, 23170, 18204, 12539, 6393, 0, -6393, -12539, -18204,
+    -23170, -27245, -30273, -32137, -32767, -32137, -30273, -27245, -23170,
+    -18204, -12539, -6393, 0, 6393, 12539, 18204, 23170, 27245, 30273, 32137,
+    32767, 32137, 30273, 27245, 23170, 18204, 12539, 6393, 0, -6393, -12539,
+    -18204, -23170, -27245, -30273, -32137, -32767, -32137, -30273, -27245,
+    -23170, -18204, -12539, -6393, 0, 6393, 12539, 18204, 23170, 27245, 30273,
+    32137, 32767, 32137, 30273, 27245, 23170, 18204, 12539, 6393, 0, -6393,
+    -12539, -18204, -23170, -27245, -30273, -32137, -32767, -32137, -30273,
+    -27245, -23170, -18204, -12539, -6393, 0, 6393, 12539, 18204, 23170, 27245,
+    30273, 32137, 32767, 32137, 30273, 27245, 23170, 18204, 12539, 6393, 0, -6393,
+    -12539, -18204, -23170, -27245, -30273, -32137, -32767, -32137, -30273,
+    -27245, -23170, -18204, -12539, -6393)  // generated in excel using below set audio params
   implicit val p: AudioParams =
-    AudioParams.test
+    AudioParams.test.copy(sampleRate = 64, sampleWidth = 16)
   "PcmSineSample" should "generate following lookup table" in {
-    test(new Dummy) { dut => 
-      val twoHz = PcmSineSample(freqHz = 2, numSamples = 128)
-      
-      }
+    val twoHz = PcmSineSample(freqHz = 2, numSamples = 128)
+    assert(twoHzRef == twoHz)
   }
 }

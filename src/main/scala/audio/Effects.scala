@@ -4,11 +4,18 @@ import chisel3._
 import chisel3.util._
 import utils.SampleHelper.saturate
 import utils._
+import chisel.lib.fifo._
 
 import util._
 
+/**
+  * Used as a baseline of how an effect should behave
+  *
+  * @param threshold
+  * @param params
+  */
 class Saturate(threshold: Option[Int] = None)(implicit params: AudioParams)
-    extends AudioEffect() {
+    extends StartDoneEffect() {
   val gainIn = switches.gain
 
   val isNeg = sampleIn(sampleIn.getWidth - 1)
@@ -17,15 +24,20 @@ class Saturate(threshold: Option[Int] = None)(implicit params: AudioParams)
     Mux(isNeg, sampleIn -& gainIn, sampleIn +& gainIn)
 
   val saturatedSample = saturate(gainedSample, threshold)
-  // we are not allowed to set start and done in same cycle.
-  //   So we delay it
-  val doneReg = RegInit(false.B)
 
-  when(start) {
-    doneReg := 1.B
-    sampleOut := saturatedSample
-  }.otherwise {
-    done := 0.B
-  }
-  done := doneReg
+  oneCycleStartDoneHandshake(saturatedSample)
+}
+
+
+/**
+  * Will consume inputs until FIFO has been filled up. When it is full `out` will become
+  * valid.
+  *
+  * @param delaySamples: How many samples to delay by
+  * @param params
+  */
+class Delay(delaySamples: Int)(implicit params: AudioParams) extends AudioEffect() {
+    val mem = Module(new MemFifo(params.sample, delaySamples))
+    mem.io.enq <> in
+    out <> mem.io.deq
 }

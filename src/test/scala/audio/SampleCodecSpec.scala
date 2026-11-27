@@ -15,7 +15,7 @@ class SampleCodecSpec
   for (width <- Seq(8, 16, 24)) {
 
     implicit val p: AudioParams =
-      AudioParams(sampleWidth = width, sampleRate = 64)
+      AudioParams.test.copy(sampleWidth = width, sampleRate = 64)
     val sineSamples =  // Ensure we get two full cycles  // period = sampleRate / freq
       PcmSineSample(freqHz = p.sampleRate / 4, numSamples = p.sampleRate / 2)
 
