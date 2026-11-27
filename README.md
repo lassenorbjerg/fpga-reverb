@@ -28,7 +28,8 @@ The baud rate used is `921600` and sample rate of `44.1kHz`.
 ## Status
 | Feature                    | Branch/tag | Verilog           | XDC                 | Works                                                                                   |
 | -------------------------- | ---------- | ----------------- | ------------------- | --------------------------------------------------------------------------------------- |
-| Delay line                 | 0.3.2      | delay.v           | delay.xdc           | Tests pass. Playback works on FPGA. Tried with 50ms delay. Not sure if I noticed it.                                                                            |
+| Gain                       | 0.4.0      |                   |                     | Tests pass. Not tested on FPGA.                                                         |
+| Delay line                 | 0.3.2      | delay.v           | delay.xdc           | Tests pass. Playback works on FPGA. Tried with 50ms delay. Not sure if I noticed it.    |
 | Playback with effect chain | 0.3.1      | effectChainGain.v | effectChainGain.xdc | Tests pass.                                                                             |
 | Real-time raw playback     | 0.3.0      | echoNew.v         | echoNew.xdc         | Yes. It is undistorted playback. Although it does have a fairly significant delay ~90ms |
 
